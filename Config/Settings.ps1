@@ -162,6 +162,3 @@ function Import-AppConfig {
         return $false
     }
 }
-
-# Export functions
-Export-ModuleMember -Function * -Variable AppConfig

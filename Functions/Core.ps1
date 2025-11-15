@@ -370,6 +370,3 @@ function Get-FolderDialog {
 }
 
 #endregion
-
-# Export functions
-Export-ModuleMember -Function *

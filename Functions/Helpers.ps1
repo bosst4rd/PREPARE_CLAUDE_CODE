@@ -370,6 +370,3 @@ Stack Trace: $($ErrorRecord.ScriptStackTrace)
 }
 
 #endregion
-
-# Export functions
-Export-ModuleMember -Function *
