@@ -64,7 +64,7 @@
                                      Background="Transparent"/>
                         </Border>
 
-                        <Button Grid.Column="2" Name="BrowseFolderButton" Content="Durchsuchen" Background="#0078D4" Foreground="White" BorderThickness="0" Padding="15,10" FontSize="14" FontWeight="SemiBold" Cursor="Hand" CornerRadius="4"/>
+                        <Button Grid.Column="2" Name="BrowseFolderButton" Content="Durchsuchen" Background="#0078D4" Foreground="White" BorderThickness="0" Padding="15,10" FontSize="14" FontWeight="SemiBold" Cursor="Hand"/>
                     </Grid>
                 </Grid>
             </Border>
@@ -79,7 +79,7 @@
             </Border>
 
             <!-- Start Button -->
-            <Button Grid.Row="4" Name="StartButton" Content="STARTEN" Background="#10893E" Foreground="White" BorderThickness="0" Height="50" FontSize="16" FontWeight="Bold" Cursor="Hand" HorizontalAlignment="Stretch" CornerRadius="6"/>
+            <Button Grid.Row="4" Name="StartButton" Content="STARTEN" Background="#10893E" Foreground="White" BorderThickness="0" Height="50" FontSize="16" FontWeight="Bold" Cursor="Hand" HorizontalAlignment="Stretch"/>
         </Grid>
 
         <!-- Activity Log Section -->
@@ -93,7 +93,7 @@
 
                 <Grid Grid.Row="0">
                     <Label Content="Aktivitaetsprotokoll" FontSize="14" FontWeight="SemiBold" Foreground="#202020" HorizontalAlignment="Left" Padding="0"/>
-                    <Button Name="ClearLogButton" Content="Loeschen" Background="Transparent" Foreground="#0078D4" BorderBrush="#0078D4" BorderThickness="1" HorizontalAlignment="Right" Padding="12,4" FontSize="12" Cursor="Hand" CornerRadius="3"/>
+                    <Button Name="ClearLogButton" Content="Loeschen" Background="Transparent" Foreground="#0078D4" BorderBrush="#0078D4" BorderThickness="1" HorizontalAlignment="Right" Padding="12,4" FontSize="12" Cursor="Hand"/>
                 </Grid>
 
                 <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4">
