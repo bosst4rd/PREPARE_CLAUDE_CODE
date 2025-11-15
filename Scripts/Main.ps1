@@ -62,29 +62,15 @@ try {
     }
 
     Write-Host "Loading GUI from: $xamlPath" -ForegroundColor Cyan
-    $xamlContent = Get-Content -Path $xamlPath -Raw
+    $xamlContent = Get-Content -Path $xamlPath -Raw -Encoding UTF8
 
-    # Remove the external ResourceDictionary reference as it doesn't work with XamlReader
+    # Remove the external ResourceDictionary reference (not needed, all styles are inline)
     $xamlContent = $xamlContent -replace '<Window\.Resources>[\s\S]*?</Window\.Resources>', ''
-    $xamlContent = $xamlContent -replace 'Background="\{DynamicResource BackgroundBrush\}"', 'Background="#F3F3F3"'
-    $xamlContent = $xamlContent -replace 'Style="\{StaticResource .*?\}"', ''
 
     # Create window
     $window = New-WPFDialog -XamlContent $xamlContent
     if (-not $window) {
         throw "Failed to create WPF window"
-    }
-
-    # Load and apply resource dictionary programmatically
-    try {
-        $templates = Get-Content -Path $templatesPath -Raw
-        $templatesXml = [xml]$templates
-        $resourceDict = [Windows.Markup.XamlReader]::Parse($templates)
-        $window.Resources.MergedDictionaries.Add($resourceDict)
-        Write-Host "Resource templates loaded successfully" -ForegroundColor Green
-    }
-    catch {
-        Write-Warning "Could not load resource templates: $_"
     }
 
     Write-Host "GUI loaded successfully" -ForegroundColor Green
