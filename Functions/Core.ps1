@@ -23,8 +23,9 @@ function New-WPFDialog {
     try {
         Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 
-        # Remove XML attributes that PowerShell doesn't like
-        $XamlContent = $XamlContent -replace 'mc:Ignorable="d"', '' -replace "x:N", 'N' -replace '^<Win.*', '<Window'
+        # Remove problematic XML attributes
+        $XamlContent = $XamlContent -replace 'mc:Ignorable="d"', ''
+        $XamlContent = $XamlContent -replace 'x:Class="[^"]*"', ''
 
         # Load XAML
         [xml]$xaml = $XamlContent

@@ -20,8 +20,11 @@ Dieses Tool bietet eine moderne Windows 11-ähnliche WPF-Benutzeroberfläche fü
 
 ```
 PREPARE_CLAUDE_CODE/
-├── Main.ps1                    # Haupteinstiegspunkt
 ├── README.md                   # Diese Datei
+├── Start.bat                   # Windows Launcher
+│
+├── Scripts/                    # 📜 PowerShell-Skripte
+│   └── Main.ps1               # Haupteinstiegspunkt
 │
 ├── GUI/                        # UI-Schicht (XAML)
 │   ├── App.xaml               # Application-Ressourcen
@@ -65,8 +68,14 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ### Starten
 
+**Option 1: Batch-Datei (empfohlen)**
+```batch
+Start.bat
+```
+
+**Option 2: PowerShell direkt**
 ```powershell
-.\Main.ps1
+.\Scripts\Main.ps1
 ```
 
 ## 🏗️ Architektur - Zero-Struktur

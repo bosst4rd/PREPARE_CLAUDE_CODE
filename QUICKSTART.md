@@ -20,9 +20,16 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ### Schritt 3: Application starten
 
+**Option 1: Mit Batch-Datei (einfach)**
+```batch
+cd PREPARE_CLAUDE_CODE
+Start.bat
+```
+
+**Option 2: Mit PowerShell**
 ```powershell
 cd PREPARE_CLAUDE_CODE
-.\Main.ps1
+.\Scripts\Main.ps1
 ```
 
 ## 📝 Erste Schritte nach dem Start
@@ -67,7 +74,7 @@ Aktivieren Sie die Checkboxen:
 **Lösung:**
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
-.\Main.ps1
+.\Scripts\Main.ps1
 ```
 
 ### Problem: "XAML file not found"
@@ -77,7 +84,7 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 **Lösung:**
 ```powershell
 cd PREPARE_CLAUDE_CODE  # Zum Projektverzeichnis wechseln
-.\Main.ps1
+.\Scripts\Main.ps1
 ```
 
 ### Problem: GUI zeigt Fehler beim Start

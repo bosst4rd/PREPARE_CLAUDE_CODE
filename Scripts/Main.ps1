@@ -17,13 +17,15 @@ $ErrorActionPreference = "Stop"
 
 #region Module Imports
 
-# Get script directory
+# Get script directory (Scripts folder)
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+# Get project root directory (parent of Scripts)
+$projectRoot = Split-Path -Parent $scriptPath
 
 # Import modules
-. (Join-Path $scriptPath "Config\Settings.ps1")
-. (Join-Path $scriptPath "Functions\Core.ps1")
-. (Join-Path $scriptPath "Functions\Helpers.ps1")
+. (Join-Path $projectRoot "Config\Settings.ps1")
+. (Join-Path $projectRoot "Functions\Core.ps1")
+. (Join-Path $projectRoot "Functions\Helpers.ps1")
 
 #endregion
 
@@ -48,19 +50,41 @@ try {
     # Load required assemblies
     Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase, System.Windows.Forms
 
-    # Load XAML
-    $xamlPath = Join-Path $scriptPath "GUI\MainWindow.xaml"
+    # Load XAML files
+    $xamlPath = Join-Path $projectRoot "GUI\MainWindow.xaml"
+    $templatesPath = Join-Path $projectRoot "GUI\ControlTemplates.xaml"
+
     if (-not (Test-Path -Path $xamlPath)) {
         throw "XAML file not found: $xamlPath"
+    }
+    if (-not (Test-Path -Path $templatesPath)) {
+        throw "Templates file not found: $templatesPath"
     }
 
     Write-Host "Loading GUI from: $xamlPath" -ForegroundColor Cyan
     $xamlContent = Get-Content -Path $xamlPath -Raw
 
+    # Remove the external ResourceDictionary reference as it doesn't work with XamlReader
+    $xamlContent = $xamlContent -replace '<Window\.Resources>[\s\S]*?</Window\.Resources>', ''
+    $xamlContent = $xamlContent -replace 'Background="\{DynamicResource BackgroundBrush\}"', 'Background="#F3F3F3"'
+    $xamlContent = $xamlContent -replace 'Style="\{StaticResource .*?\}"', ''
+
     # Create window
     $window = New-WPFDialog -XamlContent $xamlContent
     if (-not $window) {
         throw "Failed to create WPF window"
+    }
+
+    # Load and apply resource dictionary programmatically
+    try {
+        $templates = Get-Content -Path $templatesPath -Raw
+        $templatesXml = [xml]$templates
+        $resourceDict = [Windows.Markup.XamlReader]::Parse($templates)
+        $window.Resources.MergedDictionaries.Add($resourceDict)
+        Write-Host "Resource templates loaded successfully" -ForegroundColor Green
+    }
+    catch {
+        Write-Warning "Could not load resource templates: $_"
     }
 
     Write-Host "GUI loaded successfully" -ForegroundColor Green

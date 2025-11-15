@@ -7,7 +7,7 @@ Die **Zero-Struktur** ist eine modulare, saubere Architektur mit klarer Trennung
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     PowerShell GUI Tool                      │
-│                         Main.ps1                             │
+│                      Scripts/Main.ps1                        │
 └─────────────────────────────────────────────────────────────┘
                               │
                               │ bootstraps
@@ -35,7 +35,6 @@ Die **Zero-Struktur** ist eine modulare, saubere Architektur mit klarer Trennung
 ```
 PREPARE_CLAUDE_CODE/
 │
-├── 📄 Main.ps1                      # ⚙️  Application Entry Point
 ├── 📄 Start.bat                     # 🚀 Windows Launcher
 ├── 📄 README.md                     # 📖 Haupt-Dokumentation
 ├── 📄 QUICKSTART.md                 # 🎯 Schnelleinstieg
@@ -43,6 +42,9 @@ PREPARE_CLAUDE_CODE/
 ├── 📄 STRUCTURE.md                  # 📐 Diese Datei
 ├── 📄 .gitignore                    # 🚫 Git Ignores
 ├── 📄 .gitattributes                # ⚙️  Git Attributes
+│
+├── 📁 Scripts/                      # 📜 PowerShell Scripts
+│   └── Main.ps1                    # Application Entry Point
 │
 ├── 📁 GUI/                          # 🎨 Presentation Layer
 │   ├── App.xaml                    # Application Resources
@@ -213,7 +215,7 @@ Modules/
 1. Start.bat (optional)
         │
         ▼
-2. Main.ps1 - Script Execution
+2. Scripts/Main.ps1 - Script Execution
         │
         ├─► Load Config/Settings.ps1
         │       └─► Initialize-AppConfiguration

@@ -15,7 +15,7 @@ if %errorlevel% neq 0 (
 )
 
 REM Launch the PowerShell script
-powershell.exe -ExecutionPolicy Bypass -File "%~dp0Main.ps1"
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0Scripts\Main.ps1"
 
 REM Check exit code
 if %errorlevel% neq 0 (
