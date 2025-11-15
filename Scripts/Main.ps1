@@ -62,10 +62,9 @@ try {
     }
 
     Write-Host "Loading GUI from: $xamlPath" -ForegroundColor Cyan
-    $xamlContent = Get-Content -Path $xamlPath -Raw -Encoding UTF8
 
-    # Remove the external ResourceDictionary reference (not needed, all styles are inline)
-    $xamlContent = $xamlContent -replace '<Window\.Resources>[\s\S]*?</Window\.Resources>', ''
+    # Load XAML directly without any modifications
+    $xamlContent = [System.IO.File]::ReadAllText($xamlPath)
 
     # Create window
     $window = New-WPFDialog -XamlContent $xamlContent
