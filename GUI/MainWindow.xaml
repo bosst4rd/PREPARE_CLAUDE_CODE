@@ -1,174 +1,243 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="PowerShell GUI Tool"
-        Height="700"
-        Width="1000"
+        Height="600"
+        Width="900"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource BackgroundBrush}"
+        Background="#F3F3F3"
         ResizeMode="CanResize">
-
-    <Window.Resources>
-        <ResourceDictionary Source="ControlTemplates.xaml"/>
-    </Window.Resources>
 
     <Grid Margin="0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>
+            <RowDefinition Height="80"/>
             <!-- Header -->
             <RowDefinition Height="*"/>
-            <!-- Content -->
+            <!-- Main Content -->
             <RowDefinition Height="200"/>
             <!-- Activity Log -->
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="35"/>
             <!-- Status Bar -->
         </Grid.RowDefinitions>
 
         <!-- Header Section -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
-            <Grid Margin="20,0">
-                <Label Content="PowerShell GUI Tool" Style="{StaticResource HeaderLabel}" VerticalAlignment="Center"/>
+        <Border Grid.Row="0" Background="#FFFFFF" BorderThickness="0,0,0,1" BorderBrush="#E0E0E0">
+            <Grid Margin="30,0">
+                <StackPanel VerticalAlignment="Center">
+                    <Label Content="PowerShell GUI Tool" FontSize="24" FontWeight="SemiBold" Foreground="#202020" Padding="0,0,0,5"/>
+                    <Label Content="Zero-Structure Edition" FontSize="12" Foreground="#808080" Padding="0"/>
+                </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Main Content Area -->
-        <Grid Grid.Row="1" Margin="20">
-            <TabControl Name="MainTabControl" Style="{StaticResource ModernTabControl}">
+        <!-- Main Content Section -->
+        <Grid Grid.Row="1" Margin="30,30,30,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-                <!-- Tab 1: Main Operations -->
-                <TabItem Header="Hauptfunktionen" Style="{StaticResource ModernTabItem}">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,20,0,0">
-                        <StackPanel Margin="0">
+            <!-- Folder Selection Section -->
+            <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="6" Padding="25">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="15"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                            <!-- Input Section -->
-                            <Label Content="Eingabe" Style="{StaticResource HeaderLabel}" FontSize="16"/>
-                            <Grid Margin="0,0,0,20">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="120"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="120"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="10"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
+                    <!-- Title -->
+                    <Label Grid.Row="0" Content="Zielordner auswählen" FontSize="16" FontWeight="SemiBold" Foreground="#202020" Padding="0"/>
 
-                                <Label Grid.Row="0" Grid.Column="0" Content="Textfeld:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
-                                <TextBox Grid.Row="0" Grid.Column="1" Name="InputTextBox" Style="{StaticResource ModernTextBox}" />
-                                <Button Grid.Row="0" Grid.Column="2" Name="ProcessButton" Content="Verarbeiten" Style="{StaticResource ModernButton}" Margin="10,0,0,0"/>
+                    <!-- Folder Selection Controls -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="15"/>
+                            <ColumnDefinition Width="150"/>
+                        </Grid.ColumnDefinitions>
 
-                                <Label Grid.Row="2" Grid.Column="0" Content="Option:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
-                                <ComboBox Grid.Row="2" Grid.Column="1" Name="OptionComboBox" Style="{StaticResource ModernComboBox}">
-                                    <ComboBoxItem Content="Option 1" IsSelected="True"/>
-                                    <ComboBoxItem Content="Option 2"/>
-                                    <ComboBoxItem Content="Option 3"/>
-                                </ComboBox>
-                            </Grid>
+                        <!-- Path TextBox -->
+                        <Border Grid.Column="0" BorderBrush="#D0D0D0" BorderThickness="1" CornerRadius="4" Background="#FFFFFF">
+                            <TextBox Name="TargetPathTextBox"
+                                     BorderThickness="0"
+                                     Padding="12,10"
+                                     FontSize="14"
+                                     FontFamily="Segoe UI"
+                                     VerticalContentAlignment="Center"
+                                     Foreground="#202020"
+                                     Background="Transparent"
+                                     Text=""/>
+                        </Border>
 
-                            <!-- Action Buttons -->
-                            <Label Content="Aktionen" Style="{StaticResource HeaderLabel}" FontSize="16" Margin="0,10,0,0"/>
-                            <WrapPanel Margin="0,0,0,20">
-                                <Button Name="Action1Button" Content="Aktion 1" Style="{StaticResource ModernButton}" Margin="0,0,10,10" MinWidth="120"/>
-                                <Button Name="Action2Button" Content="Aktion 2" Style="{StaticResource ModernButton}" Margin="0,0,10,10" MinWidth="120"/>
-                                <Button Name="Action3Button" Content="Aktion 3" Style="{StaticResource SecondaryButton}" Margin="0,0,10,10" MinWidth="120"/>
-                                <Button Name="ClearButton" Content="Zurücksetzen" Style="{StaticResource SecondaryButton}" Margin="0,0,10,10" MinWidth="120"/>
-                            </WrapPanel>
+                        <!-- Browse Button -->
+                        <Button Grid.Column="2"
+                                Name="BrowseFolderButton"
+                                Content="📁 Durchsuchen"
+                                Background="#0078D4"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Padding="15,10"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Name="Border"
+                                                        Background="{TemplateBinding Background}"
+                                                        CornerRadius="4"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Border" Property="Background" Value="#106EBE"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="Border" Property="Background" Value="#005A9E"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Border>
 
-                            <!-- Options -->
-                            <Label Content="Optionen" Style="{StaticResource HeaderLabel}" FontSize="16" Margin="0,10,0,0"/>
-                            <StackPanel Margin="0,0,0,20">
-                                <CheckBox Name="Option1CheckBox" Content="Verbose Logging aktivieren" Style="{StaticResource ModernCheckBox}" Margin="0,0,0,8"/>
-                                <CheckBox Name="Option2CheckBox" Content="Automatische Verarbeitung" Style="{StaticResource ModernCheckBox}" Margin="0,0,0,8"/>
-                                <CheckBox Name="Option3CheckBox" Content="Backup erstellen" Style="{StaticResource ModernCheckBox}" IsChecked="True" Margin="0,0,0,8"/>
-                            </StackPanel>
+            <!-- Options Section -->
+            <Border Grid.Row="2" Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="6" Padding="25">
+                <StackPanel>
+                    <Label Content="Optionen" FontSize="16" FontWeight="SemiBold" Foreground="#202020" Padding="0,0,0,10"/>
 
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
+                    <CheckBox Name="VerboseLoggingCheckBox"
+                              Content="Detaillierte Protokollierung aktivieren"
+                              FontSize="14"
+                              Foreground="#404040"
+                              Margin="0,0,0,8"
+                              Cursor="Hand"/>
 
-                <!-- Tab 2: Configuration -->
-                <TabItem Header="Konfiguration" Style="{StaticResource ModernTabItem}">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,20,0,0">
-                        <StackPanel>
-                            <Label Content="Konfigurationseinstellungen" Style="{StaticResource HeaderLabel}" FontSize="16"/>
+                    <CheckBox Name="CreateBackupCheckBox"
+                              Content="Automatisches Backup erstellen"
+                              FontSize="14"
+                              Foreground="#404040"
+                              IsChecked="True"
+                              Cursor="Hand"/>
+                </StackPanel>
+            </Border>
 
-                            <Grid Margin="0,0,0,20">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="100"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="10"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="10"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <Label Grid.Row="0" Grid.Column="0" Content="Arbeitsverzeichnis:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
-                                <TextBox Grid.Row="0" Grid.Column="1" Name="WorkDirTextBox" Style="{StaticResource ModernTextBox}"/>
-                                <Button Grid.Row="0" Grid.Column="2" Name="BrowseButton" Content="Durchsuchen" Style="{StaticResource SecondaryButton}" Margin="10,0,0,0"/>
-
-                                <Label Grid.Row="2" Grid.Column="0" Content="Log-Datei:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
-                                <TextBox Grid.Row="2" Grid.Column="1" Name="LogFileTextBox" Style="{StaticResource ModernTextBox}"/>
-
-                                <Label Grid.Row="4" Grid.Column="0" Content="Timeout (Sek):" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
-                                <TextBox Grid.Row="4" Grid.Column="1" Name="TimeoutTextBox" Style="{StaticResource ModernTextBox}" Text="30"/>
-                            </Grid>
-
-                            <WrapPanel Margin="0,10,0,0">
-                                <Button Name="SaveConfigButton" Content="Speichern" Style="{StaticResource ModernButton}" Margin="0,0,10,0" MinWidth="120"/>
-                                <Button Name="LoadConfigButton" Content="Laden" Style="{StaticResource SecondaryButton}" MinWidth="120"/>
-                            </WrapPanel>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-                <!-- Tab 3: About -->
-                <TabItem Header="Info" Style="{StaticResource ModernTabItem}">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,20,0,0">
-                        <StackPanel>
-                            <Label Content="Über dieses Tool" Style="{StaticResource HeaderLabel}" FontSize="16"/>
-                            <TextBlock TextWrapping="Wrap" Margin="0,10,0,10" FontSize="14" FontFamily="Segoe UI">
-                                PowerShell GUI Tool - Ein robustes, modulares Tool basierend auf der Zero-Struktur.
-                                <LineBreak/><LineBreak/>
-                                Version: 1.0.0<LineBreak/>
-                                Erstellt mit: PowerShell und WPF<LineBreak/>
-                                Architektur: Modulare Zero-Struktur<LineBreak/>
-                            </TextBlock>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-            </TabControl>
+            <!-- Start Button -->
+            <Button Grid.Row="4"
+                    Name="StartButton"
+                    Content="▶ Starten"
+                    Background="#10893E"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Padding="0"
+                    Height="50"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Cursor="Hand"
+                    HorizontalAlignment="Stretch">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Name="Border"
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="6"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#0F7A38"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#0D6A30"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter TargetName="Border" Property="Background" Value="#A0A0A0"/>
+                                            <Setter TargetName="Border" Property="Opacity" Value="0.5"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+            </Button>
         </Grid>
 
         <!-- Activity Log Section -->
-        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}">
-            <Grid Margin="20,10">
+        <Border Grid.Row="2" Background="#FFFFFF" BorderThickness="0,1,0,0" BorderBrush="#E0E0E0">
+            <Grid Margin="30,15">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="10"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" Margin="0,0,0,10">
-                    <Label Content="Aktivitätsprotokoll" Style="{StaticResource ModernLabel}" FontWeight="SemiBold" HorizontalAlignment="Left"/>
-                    <Button Name="ClearLogButton" Content="Protokoll löschen" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" Padding="12,4" FontSize="12"/>
+                <!-- Log Header -->
+                <Grid Grid.Row="0">
+                    <Label Content="📋 Aktivitätsprotokoll" FontSize="14" FontWeight="SemiBold" Foreground="#202020" HorizontalAlignment="Left" Padding="0"/>
+                    <Button Name="ClearLogButton"
+                            Content="Löschen"
+                            Background="Transparent"
+                            Foreground="#0078D4"
+                            BorderBrush="#0078D4"
+                            BorderThickness="1"
+                            HorizontalAlignment="Right"
+                            Padding="12,4"
+                            FontSize="12"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Name="Border"
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="3"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Border" Property="Background" Value="#F0F0F0"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </Grid>
 
-                <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4">
+                <!-- Log Content -->
+                <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4">
                     <RichTextBox Name="ActivityLog"
                                  IsReadOnly="True"
                                  VerticalScrollBarVisibility="Auto"
-                                 Background="{DynamicResource BackgroundBrush}"
+                                 Background="#FAFAFA"
                                  BorderThickness="0"
                                  FontFamily="Consolas"
                                  FontSize="12"
                                  Padding="10">
                         <FlowDocument>
                             <Paragraph>
-                                <Run Foreground="Gray" Text="Bereit..."/>
+                                <Run Foreground="Gray" Text="Bereit zum Starten..."/>
                             </Paragraph>
                         </FlowDocument>
                     </RichTextBox>
@@ -177,22 +246,30 @@
         </Border>
 
         <!-- Status Bar -->
-        <Border Grid.Row="3" Background="{DynamicResource AccentBrush}" BorderThickness="0">
-            <Grid Margin="20,0">
+        <Border Grid.Row="3" Background="#0078D4">
+            <Grid Margin="30,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Label Name="StatusLabel" Content="Bereit" Foreground="White" FontSize="12" VerticalAlignment="Center"/>
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <ProgressBar Name="StatusProgressBar"
-                                 Width="100"
-                                 Height="4"
-                                 VerticalAlignment="Center"
-                                 Visibility="Collapsed"
-                                 Style="{StaticResource ModernProgressBar}"/>
-                </StackPanel>
+                <Label Name="StatusLabel"
+                       Content="Bereit"
+                       Foreground="White"
+                       FontSize="13"
+                       FontWeight="Medium"
+                       VerticalAlignment="Center"
+                       Padding="0"/>
+
+                <ProgressBar Name="StatusProgressBar"
+                             Grid.Column="1"
+                             Width="120"
+                             Height="6"
+                             VerticalAlignment="Center"
+                             Visibility="Collapsed"
+                             Background="#FFFFFF40"
+                             Foreground="#FFFFFF"
+                             BorderThickness="0"/>
             </Grid>
         </Border>
 

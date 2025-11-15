@@ -91,29 +91,14 @@ try {
 
     #region Get UI Controls
 
-    # Input controls
-    $inputTextBox = Get-XamlObject -Window $window -Name "InputTextBox"
-    $optionComboBox = Get-XamlObject -Window $window -Name "OptionComboBox"
+    # Main controls
+    $targetPathTextBox = Get-XamlObject -Window $window -Name "TargetPathTextBox"
+    $browseFolderButton = Get-XamlObject -Window $window -Name "BrowseFolderButton"
+    $startButton = Get-XamlObject -Window $window -Name "StartButton"
 
-    # Button controls
-    $processButton = Get-XamlObject -Window $window -Name "ProcessButton"
-    $action1Button = Get-XamlObject -Window $window -Name "Action1Button"
-    $action2Button = Get-XamlObject -Window $window -Name "Action2Button"
-    $action3Button = Get-XamlObject -Window $window -Name "Action3Button"
-    $clearButton = Get-XamlObject -Window $window -Name "ClearButton"
-
-    # Checkbox controls
-    $option1CheckBox = Get-XamlObject -Window $window -Name "Option1CheckBox"
-    $option2CheckBox = Get-XamlObject -Window $window -Name "Option2CheckBox"
-    $option3CheckBox = Get-XamlObject -Window $window -Name "Option3CheckBox"
-
-    # Configuration controls
-    $workDirTextBox = Get-XamlObject -Window $window -Name "WorkDirTextBox"
-    $logFileTextBox = Get-XamlObject -Window $window -Name "LogFileTextBox"
-    $timeoutTextBox = Get-XamlObject -Window $window -Name "TimeoutTextBox"
-    $browseButton = Get-XamlObject -Window $window -Name "BrowseButton"
-    $saveConfigButton = Get-XamlObject -Window $window -Name "SaveConfigButton"
-    $loadConfigButton = Get-XamlObject -Window $window -Name "LoadConfigButton"
+    # Option checkboxes
+    $verboseLoggingCheckBox = Get-XamlObject -Window $window -Name "VerboseLoggingCheckBox"
+    $createBackupCheckBox = Get-XamlObject -Window $window -Name "CreateBackupCheckBox"
 
     # Activity log and status
     $activityLog = Get-XamlObject -Window $window -Name "ActivityLog"
@@ -121,132 +106,104 @@ try {
     $statusLabel = Get-XamlObject -Window $window -Name "StatusLabel"
     $statusProgressBar = Get-XamlObject -Window $window -Name "StatusProgressBar"
 
-    # Initialize configuration fields
-    $workDirTextBox.Text = $config.WorkingDirectory
-    $logFileTextBox.Text = $config.LogFileName
-    $timeoutTextBox.Text = $config.DefaultTimeout
-
-    # Sync checkboxes with config
-    $option1CheckBox.IsChecked = $config.EnableVerboseLogging
-    $option2CheckBox.IsChecked = $config.EnableAutoProcessing
-    $option3CheckBox.IsChecked = $config.EnableAutoBackup
+    # Initialize with default values
+    $targetPathTextBox.Text = ""
+    $verboseLoggingCheckBox.IsChecked = $config.EnableVerboseLogging
+    $createBackupCheckBox.IsChecked = $config.EnableAutoBackup
 
     #endregion
 
     #region Event Handlers
 
-    # Process Button Click
-    $processButton.Add_Click({
+    # Browse Folder Button Click
+    $browseFolderButton.Add_Click({
         try {
-            $input = $inputTextBox.Text
-            $option = $optionComboBox.SelectedItem.Content
+            Write-Activity -RichTextBox $activityLog -Message "Öffne Ordnerauswahl..." -Level Info
 
-            if (-not (Test-InputNotEmpty -Input $input)) {
-                Write-Activity -RichTextBox $activityLog -Message "Eingabe ist leer!" -Level Warning
-                Show-MessageDialog -Title "Warnung" -Message "Bitte geben Sie einen Wert ein." -Type Warning
+            $folder = Get-FolderDialog -Description "Zielordner auswählen"
+            if ($folder) {
+                $targetPathTextBox.Text = $folder
+                Write-Activity -RichTextBox $activityLog -Message "Zielordner ausgewählt: $folder" -Level Success
+                Write-StatusBar -Label $statusLabel -Message "Ordner ausgewählt: $folder"
+            }
+            else {
+                Write-Activity -RichTextBox $activityLog -Message "Ordnerauswahl abgebrochen" -Level Info
+            }
+        }
+        catch {
+            Write-Activity -RichTextBox $activityLog -Message "Fehler bei Ordnerauswahl: $_" -Level Error
+            Write-ErrorLog -ErrorRecord $_ -LogPath (Join-Path $config.LogDirectory "error.log")
+        }
+    })
+
+    # Start Button Click
+    $startButton.Add_Click({
+        try {
+            # Get target path
+            $targetPath = $targetPathTextBox.Text
+
+            # Validate path
+            if (-not (Test-InputNotEmpty -Input $targetPath)) {
+                Write-Activity -RichTextBox $activityLog -Message "Kein Zielordner ausgewählt!" -Level Warning
+                Show-MessageDialog -Title "Warnung" -Message "Bitte wählen Sie einen Zielordner aus." -Type Warning
                 return
             }
 
-            Write-Activity -RichTextBox $activityLog -Message "Verarbeite Eingabe: '$input' mit Option: '$option'" -Level Info
+            if (-not (Test-PathValid -Path $targetPath)) {
+                Write-Activity -RichTextBox $activityLog -Message "Ungültiger Pfad: $targetPath" -Level Warning
+                Show-MessageDialog -Title "Warnung" -Message "Der ausgewählte Pfad existiert nicht oder ist ungültig." -Type Warning
+                return
+            }
+
+            # Get options
+            $verboseLogging = $verboseLoggingCheckBox.IsChecked
+            $createBackup = $createBackupCheckBox.IsChecked
+
+            # Start processing
+            Write-Activity -RichTextBox $activityLog -Message "═══════════════════════════════════════" -Level Info
+            Write-Activity -RichTextBox $activityLog -Message "Starte Verarbeitung..." -Level Info
+            Write-Activity -RichTextBox $activityLog -Message "Zielordner: $targetPath" -Level Info
+            Write-Activity -RichTextBox $activityLog -Message "Detaillierte Protokollierung: $verboseLogging" -Level Debug
+            Write-Activity -RichTextBox $activityLog -Message "Backup erstellen: $createBackup" -Level Debug
+
             Write-StatusBar -Label $statusLabel -Message "Verarbeitung läuft..." -ProgressBar $statusProgressBar -ShowProgress $true
 
+            # Disable start button during processing
+            $startButton.IsEnabled = $false
+
+            # TODO: Hier kommt Ihre Verarbeitungslogik hin
+            # Beispiel: Dateien verarbeiten, Operationen durchführen, etc.
+
             # Simulate processing
-            Start-Sleep -Milliseconds 500
+            for ($i = 1; $i -le 5; $i++) {
+                Write-Activity -RichTextBox $activityLog -Message "Verarbeite Schritt $i von 5..." -Level Info
+                Start-Sleep -Milliseconds 300
 
+                # Force UI update
+                [System.Windows.Forms.Application]::DoEvents()
+            }
+
+            # Completion
             Write-Activity -RichTextBox $activityLog -Message "Verarbeitung erfolgreich abgeschlossen!" -Level Success
-            Write-StatusBar -Label $statusLabel -Message "Bereit" -ProgressBar $statusProgressBar -ShowProgress $false
+            Write-Activity -RichTextBox $activityLog -Message "═══════════════════════════════════════" -Level Info
 
-            Show-MessageDialog -Title "Erfolg" -Message "Verarbeitung abgeschlossen!" -Type Info
+            Write-StatusBar -Label $statusLabel -Message "Verarbeitung abgeschlossen" -ProgressBar $statusProgressBar -ShowProgress $false
+
+            # Re-enable start button
+            $startButton.IsEnabled = $true
+
+            Show-MessageDialog -Title "Erfolg" -Message "Die Verarbeitung wurde erfolgreich abgeschlossen!" -Type Info
         }
         catch {
-            Write-Activity -RichTextBox $activityLog -Message "Fehler bei Verarbeitung: $_" -Level Error
+            Write-Activity -RichTextBox $activityLog -Message "FEHLER: $_" -Level Error
+            Write-Activity -RichTextBox $activityLog -Message "═══════════════════════════════════════" -Level Info
             Write-StatusBar -Label $statusLabel -Message "Fehler aufgetreten" -ProgressBar $statusProgressBar -ShowProgress $false
             Write-ErrorLog -ErrorRecord $_ -LogPath (Join-Path $config.LogDirectory "error.log")
-        }
-    })
 
-    # Action 1 Button Click
-    $action1Button.Add_Click({
-        Write-Activity -RichTextBox $activityLog -Message "Aktion 1 ausgeführt" -Level Info
-        Write-StatusBar -Label $statusLabel -Message "Aktion 1 abgeschlossen"
-    })
+            # Re-enable start button
+            $startButton.IsEnabled = $true
 
-    # Action 2 Button Click
-    $action2Button.Add_Click({
-        Write-Activity -RichTextBox $activityLog -Message "Aktion 2 ausgeführt" -Level Info
-        Write-StatusBar -Label $statusLabel -Message "Aktion 2 abgeschlossen"
-    })
-
-    # Action 3 Button Click
-    $action3Button.Add_Click({
-        Write-Activity -RichTextBox $activityLog -Message "Aktion 3 ausgeführt" -Level Debug
-        Write-StatusBar -Label $statusLabel -Message "Aktion 3 abgeschlossen"
-    })
-
-    # Clear Button Click
-    $clearButton.Add_Click({
-        $inputTextBox.Text = ""
-        $optionComboBox.SelectedIndex = 0
-        Write-Activity -RichTextBox $activityLog -Message "Eingabefelder zurückgesetzt" -Level Info
-        Write-StatusBar -Label $statusLabel -Message "Zurückgesetzt"
-    })
-
-    # Browse Button Click
-    $browseButton.Add_Click({
-        $folder = Get-FolderDialog -Description "Arbeitsverzeichnis auswählen"
-        if ($folder) {
-            $workDirTextBox.Text = $folder
-            Write-Activity -RichTextBox $activityLog -Message "Arbeitsverzeichnis ausgewählt: $folder" -Level Info
-        }
-    })
-
-    # Save Config Button Click
-    $saveConfigButton.Add_Click({
-        try {
-            # Update config from UI
-            $config.WorkingDirectory = $workDirTextBox.Text
-            $config.LogFileName = $logFileTextBox.Text
-
-            if (Test-NumericInput -Input $timeoutTextBox.Text) {
-                $config.DefaultTimeout = [int]$timeoutTextBox.Text
-            }
-
-            $config.EnableVerboseLogging = $option1CheckBox.IsChecked
-            $config.EnableAutoProcessing = $option2CheckBox.IsChecked
-            $config.EnableAutoBackup = $option3CheckBox.IsChecked
-
-            # Export configuration
-            if (Export-AppConfig) {
-                Write-Activity -RichTextBox $activityLog -Message "Konfiguration gespeichert" -Level Success
-                Show-MessageDialog -Title "Erfolg" -Message "Konfiguration wurde gespeichert." -Type Info
-            }
-        }
-        catch {
-            Write-Activity -RichTextBox $activityLog -Message "Fehler beim Speichern: $_" -Level Error
-            Write-ErrorLog -ErrorRecord $_ -LogPath (Join-Path $config.LogDirectory "error.log")
-        }
-    })
-
-    # Load Config Button Click
-    $loadConfigButton.Add_Click({
-        try {
-            if (Import-AppConfig) {
-                # Update UI from config
-                $workDirTextBox.Text = $config.WorkingDirectory
-                $logFileTextBox.Text = $config.LogFileName
-                $timeoutTextBox.Text = $config.DefaultTimeout
-
-                $option1CheckBox.IsChecked = $config.EnableVerboseLogging
-                $option2CheckBox.IsChecked = $config.EnableAutoProcessing
-                $option3CheckBox.IsChecked = $config.EnableAutoBackup
-
-                Write-Activity -RichTextBox $activityLog -Message "Konfiguration geladen" -Level Success
-                Show-MessageDialog -Title "Erfolg" -Message "Konfiguration wurde geladen." -Type Info
-            }
-        }
-        catch {
-            Write-Activity -RichTextBox $activityLog -Message "Fehler beim Laden: $_" -Level Error
-            Write-ErrorLog -ErrorRecord $_ -LogPath (Join-Path $config.LogDirectory "error.log")
+            Show-MessageDialog -Title "Fehler" -Message "Bei der Verarbeitung ist ein Fehler aufgetreten:`n`n$_" -Type Error
         }
     })
 
