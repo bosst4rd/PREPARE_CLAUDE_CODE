@@ -77,9 +77,14 @@ try {
     #region Get UI Controls
 
     # Main controls
-    $targetPathTextBox = Get-XamlObject -Window $window -Name "TargetPathTextBox"
-    $browseFolderButton = Get-XamlObject -Window $window -Name "BrowseFolderButton"
     $startButton = Get-XamlObject -Window $window -Name "StartButton"
+
+    # Element checkboxes
+    $element1CheckBox = Get-XamlObject -Window $window -Name "Element1CheckBox"
+    $element2CheckBox = Get-XamlObject -Window $window -Name "Element2CheckBox"
+    $element3CheckBox = Get-XamlObject -Window $window -Name "Element3CheckBox"
+    $element4CheckBox = Get-XamlObject -Window $window -Name "Element4CheckBox"
+    $element5CheckBox = Get-XamlObject -Window $window -Name "Element5CheckBox"
 
     # Option checkboxes
     $verboseLoggingCheckBox = Get-XamlObject -Window $window -Name "VerboseLoggingCheckBox"
@@ -92,7 +97,6 @@ try {
     $statusProgressBar = Get-XamlObject -Window $window -Name "StatusProgressBar"
 
     # Initialize with default values
-    $targetPathTextBox.Text = ""
     $verboseLoggingCheckBox.IsChecked = $config.EnableVerboseLogging
     $createBackupCheckBox.IsChecked = $config.EnableAutoBackup
 
@@ -100,43 +104,21 @@ try {
 
     #region Event Handlers
 
-    # Browse Folder Button Click
-    $browseFolderButton.Add_Click({
-        try {
-            Write-Activity -RichTextBox $activityLog -Message "Öffne Ordnerauswahl..." -Level Info
-
-            $folder = Get-FolderDialog -Description "Zielordner auswählen"
-            if ($folder) {
-                $targetPathTextBox.Text = $folder
-                Write-Activity -RichTextBox $activityLog -Message "Zielordner ausgewählt: $folder" -Level Success
-                Write-StatusBar -Label $statusLabel -Message "Ordner ausgewählt: $folder"
-            }
-            else {
-                Write-Activity -RichTextBox $activityLog -Message "Ordnerauswahl abgebrochen" -Level Info
-            }
-        }
-        catch {
-            Write-Activity -RichTextBox $activityLog -Message "Fehler bei Ordnerauswahl: $_" -Level Error
-            Write-ErrorLog -ErrorRecord $_ -LogPath (Join-Path $config.LogDirectory "error.log")
-        }
-    })
-
     # Start Button Click
     $startButton.Add_Click({
         try {
-            # Get target path
-            $targetPath = $targetPathTextBox.Text
+            # Get selected elements
+            $selectedElements = @()
+            if ($element1CheckBox.IsChecked) { $selectedElements += "Element 1" }
+            if ($element2CheckBox.IsChecked) { $selectedElements += "Element 2" }
+            if ($element3CheckBox.IsChecked) { $selectedElements += "Element 3" }
+            if ($element4CheckBox.IsChecked) { $selectedElements += "Element 4" }
+            if ($element5CheckBox.IsChecked) { $selectedElements += "Element 5" }
 
-            # Validate path
-            if (-not (Test-InputNotEmpty -Input $targetPath)) {
-                Write-Activity -RichTextBox $activityLog -Message "Kein Zielordner ausgewählt!" -Level Warning
-                Show-MessageDialog -Title "Warnung" -Message "Bitte wählen Sie einen Zielordner aus." -Type Warning
-                return
-            }
-
-            if (-not (Test-PathValid -Path $targetPath)) {
-                Write-Activity -RichTextBox $activityLog -Message "Ungültiger Pfad: $targetPath" -Level Warning
-                Show-MessageDialog -Title "Warnung" -Message "Der ausgewählte Pfad existiert nicht oder ist ungültig." -Type Warning
+            # Validate at least one element is selected
+            if ($selectedElements.Count -eq 0) {
+                Write-Activity -RichTextBox $activityLog -Message "Kein Element ausgewählt!" -Level Warning
+                Show-MessageDialog -Title "Warnung" -Message "Bitte wählen Sie mindestens ein Element aus." -Type Warning
                 return
             }
 
@@ -146,38 +128,39 @@ try {
 
             # Start processing
             Write-Activity -RichTextBox $activityLog -Message "═══════════════════════════════════════" -Level Info
-            Write-Activity -RichTextBox $activityLog -Message "Starte Verarbeitung..." -Level Info
-            Write-Activity -RichTextBox $activityLog -Message "Zielordner: $targetPath" -Level Info
+            Write-Activity -RichTextBox $activityLog -Message "Starte Sammlung..." -Level Info
+            Write-Activity -RichTextBox $activityLog -Message "Ausgewählte Elemente: $($selectedElements -join ', ')" -Level Info
             Write-Activity -RichTextBox $activityLog -Message "Detaillierte Protokollierung: $verboseLogging" -Level Debug
             Write-Activity -RichTextBox $activityLog -Message "Backup erstellen: $createBackup" -Level Debug
 
-            Write-StatusBar -Label $statusLabel -Message "Verarbeitung läuft..." -ProgressBar $statusProgressBar -ShowProgress $true
+            Write-StatusBar -Label $statusLabel -Message "Sammlung läuft..." -ProgressBar $statusProgressBar -ShowProgress $true
 
             # Disable start button during processing
             $startButton.IsEnabled = $false
 
             # TODO: Hier kommt Ihre Verarbeitungslogik hin
-            # Beispiel: Dateien verarbeiten, Operationen durchführen, etc.
+            # Beispiel: Elemente sammeln, verarbeiten, etc.
 
-            # Simulate processing
-            for ($i = 1; $i -le 5; $i++) {
-                Write-Activity -RichTextBox $activityLog -Message "Verarbeite Schritt $i von 5..." -Level Info
-                Start-Sleep -Milliseconds 300
+            # Simulate processing each selected element
+            foreach ($element in $selectedElements) {
+                Write-Activity -RichTextBox $activityLog -Message "Verarbeite $element..." -Level Info
+                Start-Sleep -Milliseconds 500
 
                 # Force UI update
                 [System.Windows.Forms.Application]::DoEvents()
             }
 
             # Completion
-            Write-Activity -RichTextBox $activityLog -Message "Verarbeitung erfolgreich abgeschlossen!" -Level Success
+            Write-Activity -RichTextBox $activityLog -Message "Sammlung erfolgreich abgeschlossen!" -Level Success
+            Write-Activity -RichTextBox $activityLog -Message "$($selectedElements.Count) Element(e) verarbeitet" -Level Success
             Write-Activity -RichTextBox $activityLog -Message "═══════════════════════════════════════" -Level Info
 
-            Write-StatusBar -Label $statusLabel -Message "Verarbeitung abgeschlossen" -ProgressBar $statusProgressBar -ShowProgress $false
+            Write-StatusBar -Label $statusLabel -Message "Sammlung abgeschlossen" -ProgressBar $statusProgressBar -ShowProgress $false
 
             # Re-enable start button
             $startButton.IsEnabled = $true
 
-            Show-MessageDialog -Title "Erfolg" -Message "Die Verarbeitung wurde erfolgreich abgeschlossen!" -Type Info
+            Show-MessageDialog -Title "Erfolg" -Message "Die Sammlung wurde erfolgreich abgeschlossen!`n`n$($selectedElements.Count) Element(e) verarbeitet." -Type Info
         }
         catch {
             Write-Activity -RichTextBox $activityLog -Message "FEHLER: $_" -Level Error
@@ -188,7 +171,7 @@ try {
             # Re-enable start button
             $startButton.IsEnabled = $true
 
-            Show-MessageDialog -Title "Fehler" -Message "Bei der Verarbeitung ist ein Fehler aufgetreten:`n`n$_" -Type Error
+            Show-MessageDialog -Title "Fehler" -Message "Bei der Sammlung ist ein Fehler aufgetreten:`n`n$_" -Type Error
         }
     })
 
