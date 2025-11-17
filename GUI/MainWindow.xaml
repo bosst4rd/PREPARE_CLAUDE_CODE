@@ -24,28 +24,22 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="20">
 
-                <!-- Folder Selection -->
+                <!-- Optionale Elemente Auswahl -->
                 <Border Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" Padding="20" Margin="0,0,0,15">
                     <StackPanel>
-                        <Label Content="Zielordner auswaehlen" FontSize="14" FontWeight="SemiBold" Foreground="#202020" Padding="0,0,0,10"/>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="130"/>
-                            </Grid.ColumnDefinitions>
-
-                            <TextBox Grid.Column="0" Name="TargetPathTextBox" Height="35" Padding="10,8" FontSize="13" VerticalContentAlignment="Center" BorderBrush="#D0D0D0"/>
-                            <Button Grid.Column="2" Name="BrowseFolderButton" Content="Durchsuchen" Height="35" Background="#0078D4" Foreground="White" BorderThickness="0" FontSize="13" FontWeight="SemiBold"/>
-                        </Grid>
+                        <Label Content="Optionale Elemente auswaehlen" FontSize="14" FontWeight="SemiBold" Foreground="#202020" Padding="0,0,0,10"/>
+                        <CheckBox Name="Element1CheckBox" Content="Element 1" FontSize="13" Margin="0,0,0,8" IsChecked="True"/>
+                        <CheckBox Name="Element2CheckBox" Content="Element 2" FontSize="13" Margin="0,0,0,8" IsChecked="True"/>
+                        <CheckBox Name="Element3CheckBox" Content="Element 3" FontSize="13" Margin="0,0,0,8" IsChecked="False"/>
+                        <CheckBox Name="Element4CheckBox" Content="Element 4" FontSize="13" Margin="0,0,0,8" IsChecked="False"/>
+                        <CheckBox Name="Element5CheckBox" Content="Element 5" FontSize="13" Margin="0,0,0,8" IsChecked="True"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Options -->
+                <!-- Zusaetzliche Optionen -->
                 <Border Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" Padding="20" Margin="0,0,0,15">
                     <StackPanel>
-                        <Label Content="Optionen" FontSize="14" FontWeight="SemiBold" Foreground="#202020" Padding="0,0,0,10"/>
+                        <Label Content="Zusaetzliche Optionen" FontSize="14" FontWeight="SemiBold" Foreground="#202020" Padding="0,0,0,10"/>
                         <CheckBox Name="VerboseLoggingCheckBox" Content="Detaillierte Protokollierung aktivieren" FontSize="13" Margin="0,0,0,8"/>
                         <CheckBox Name="CreateBackupCheckBox" Content="Automatisches Backup erstellen" FontSize="13" IsChecked="True"/>
                     </StackPanel>
