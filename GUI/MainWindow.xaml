@@ -45,20 +45,16 @@
                     </StackPanel>
                 </Border>
 
-                <!-- START BUTTON - EXTRA GROSS UND DEUTLICH -->
+                <!-- START BUTTON -->
                 <Button Name="StartButton"
-                        Content="SAMMLUNG STARTEN"
-                        Height="60"
-                        Width="300"
+                        Content="STARTEN"
+                        Height="55"
                         Background="#10893E"
                         Foreground="White"
-                        FontSize="20"
+                        FontSize="18"
                         FontWeight="Bold"
-                        BorderThickness="2"
-                        BorderBrush="#0D6B31"
-                        Margin="0,10,0,10"
-                        HorizontalAlignment="Center"
-                        Cursor="Hand"/>
+                        BorderThickness="0"
+                        Margin="0,10,0,0"/>
 
             </StackPanel>
         </ScrollViewer>

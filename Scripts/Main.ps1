@@ -128,12 +128,12 @@ try {
 
             # Start processing
             Write-Activity -RichTextBox $activityLog -Message "═══════════════════════════════════════" -Level Info
-            Write-Activity -RichTextBox $activityLog -Message "Starte Sammlung..." -Level Info
+            Write-Activity -RichTextBox $activityLog -Message "Starte Verarbeitung..." -Level Info
             Write-Activity -RichTextBox $activityLog -Message "Ausgewählte Elemente: $($selectedElements -join ', ')" -Level Info
             Write-Activity -RichTextBox $activityLog -Message "Detaillierte Protokollierung: $verboseLogging" -Level Debug
             Write-Activity -RichTextBox $activityLog -Message "Backup erstellen: $createBackup" -Level Debug
 
-            Write-StatusBar -Label $statusLabel -Message "Sammlung läuft..." -ProgressBar $statusProgressBar -ShowProgress $true
+            Write-StatusBar -Label $statusLabel -Message "Verarbeitung läuft..." -ProgressBar $statusProgressBar -ShowProgress $true
 
             # Disable start button during processing
             $startButton.IsEnabled = $false
@@ -151,16 +151,16 @@ try {
             }
 
             # Completion
-            Write-Activity -RichTextBox $activityLog -Message "Sammlung erfolgreich abgeschlossen!" -Level Success
+            Write-Activity -RichTextBox $activityLog -Message "Verarbeitung erfolgreich abgeschlossen!" -Level Success
             Write-Activity -RichTextBox $activityLog -Message "$($selectedElements.Count) Element(e) verarbeitet" -Level Success
             Write-Activity -RichTextBox $activityLog -Message "═══════════════════════════════════════" -Level Info
 
-            Write-StatusBar -Label $statusLabel -Message "Sammlung abgeschlossen" -ProgressBar $statusProgressBar -ShowProgress $false
+            Write-StatusBar -Label $statusLabel -Message "Verarbeitung abgeschlossen" -ProgressBar $statusProgressBar -ShowProgress $false
 
             # Re-enable start button
             $startButton.IsEnabled = $true
 
-            Show-MessageDialog -Title "Erfolg" -Message "Die Sammlung wurde erfolgreich abgeschlossen!`n`n$($selectedElements.Count) Element(e) verarbeitet." -Type Info
+            Show-MessageDialog -Title "Erfolg" -Message "Die Verarbeitung wurde erfolgreich abgeschlossen!`n`n$($selectedElements.Count) Element(e) verarbeitet." -Type Info
         }
         catch {
             Write-Activity -RichTextBox $activityLog -Message "FEHLER: $_" -Level Error
@@ -171,7 +171,7 @@ try {
             # Re-enable start button
             $startButton.IsEnabled = $true
 
-            Show-MessageDialog -Title "Fehler" -Message "Bei der Sammlung ist ein Fehler aufgetreten:`n`n$_" -Type Error
+            Show-MessageDialog -Title "Fehler" -Message "Bei der Verarbeitung ist ein Fehler aufgetreten:`n`n$_" -Type Error
         }
     })
 
