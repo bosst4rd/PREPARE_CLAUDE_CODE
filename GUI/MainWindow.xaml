@@ -11,6 +11,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="60"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="180"/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
@@ -37,7 +38,7 @@
                 </Border>
 
                 <!-- Zusaetzliche Optionen -->
-                <Border Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" Padding="20" Margin="0,0,0,15">
+                <Border Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" Padding="20" Margin="0,0,0,0">
                     <StackPanel>
                         <Label Content="Zusaetzliche Optionen" FontSize="14" FontWeight="SemiBold" Foreground="#202020" Padding="0,0,0,10"/>
                         <CheckBox Name="VerboseLoggingCheckBox" Content="Detaillierte Protokollierung aktivieren" FontSize="13" Margin="0,0,0,8"/>
@@ -45,22 +46,24 @@
                     </StackPanel>
                 </Border>
 
-                <!-- START BUTTON -->
-                <Button Name="StartButton"
-                        Content="STARTEN"
-                        Height="55"
-                        Background="#10893E"
-                        Foreground="White"
-                        FontSize="18"
-                        FontWeight="Bold"
-                        BorderThickness="0"
-                        Margin="0,10,0,0"/>
-
             </StackPanel>
         </ScrollViewer>
 
+        <!-- START BUTTON - IMMER SICHTBAR -->
+        <Border Grid.Row="2" Background="#FFFFFF" BorderThickness="0,1,0,1" BorderBrush="#E0E0E0" Padding="20">
+            <Button Name="StartButton"
+                    Content="STARTEN"
+                    Height="55"
+                    Background="#10893E"
+                    Foreground="White"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    BorderThickness="0"
+                    HorizontalAlignment="Stretch"/>
+        </Border>
+
         <!-- Activity Log -->
-        <Border Grid.Row="2" Background="#FFFFFF" BorderThickness="0,1,0,0" BorderBrush="#E0E0E0">
+        <Border Grid.Row="3" Background="#FFFFFF" BorderThickness="0,1,0,0" BorderBrush="#E0E0E0">
             <Grid Margin="20,10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -85,7 +88,7 @@
         </Border>
 
         <!-- Status Bar -->
-        <Border Grid.Row="3" Background="#0078D4">
+        <Border Grid.Row="4" Background="#0078D4">
             <Grid Margin="20,0">
                 <Label Name="StatusLabel" Content="Bereit" Foreground="White" FontSize="12" VerticalAlignment="Center" Padding="0"/>
                 <ProgressBar Name="StatusProgressBar" Width="100" Height="4" VerticalAlignment="Center" HorizontalAlignment="Right" Visibility="Collapsed" Foreground="White" Background="#FFFFFF40" BorderThickness="0"/>
