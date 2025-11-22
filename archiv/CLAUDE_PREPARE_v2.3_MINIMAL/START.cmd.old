@@ -1,0 +1,164 @@
+@echo off
+setlocal EnableDelayedExpansion
+
+:: Titel
+title Windows 11 Setup Tool v1.2 - eXpletus
+
+:: Admin-Check
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    color 0C
+    echo.
+    echo ============================================================================
+    echo   [X] FEHLER: Keine Administrator-Rechte!
+    echo ============================================================================
+    echo.
+    echo   Bitte:
+    echo   1. Rechtsklick auf START.cmd
+    echo   2. "Als Administrator ausfuehren"
+    echo.
+    pause
+    exit /b 1
+)
+
+:: Pfade
+set "SCRIPT_DIR=%~dp0"
+set "PS_SCRIPT=%SCRIPT_DIR%scripts\Win11-Setup.ps1"
+
+:: Hauptmenue
+:MAIN_MENU
+cls
+color 0B
+echo.
+echo ============================================================================
+echo   Windows 11 OOTB Setup Tool v1.2 - eXpletus
+echo ============================================================================
+echo.
+echo   [1]  Komplett-Setup (Alle Module 1-4)
+echo.
+echo   [2]  Modul 1: Einstieg und Initialisierung
+echo   [3]  Modul 2: Cleanup (Widgets, Pins, Desktop)
+echo   [4]  Modul 3: Optik und Ergonomie
+echo   [5]  Modul 4: Performance und Energieoptionen
+echo.
+echo   [D]  Diagnose-Tool
+echo   [L]  Log-Datei anzeigen
+echo   [Q]  Beenden
+echo.
+echo ============================================================================
+echo.
+set /p "choice=Ihre Wahl: "
+
+if /i "%choice%"=="1" goto RUN_ALL
+if /i "%choice%"=="2" goto MODULE_1
+if /i "%choice%"=="3" goto MODULE_2
+if /i "%choice%"=="4" goto MODULE_3
+if /i "%choice%"=="5" goto MODULE_4
+if /i "%choice%"=="D" goto DIAGNOSE
+if /i "%choice%"=="L" goto VIEW_LOG
+if /i "%choice%"=="Q" goto EXIT
+
+echo.
+echo   [!] Ungueltige Auswahl!
+timeout /t 2 >nul
+goto MAIN_MENU
+
+:: ============================================================================
+:: KOMPLETT-SETUP
+:: ============================================================================
+:RUN_ALL
+cls
+color 0A
+echo.
+echo ============================================================================
+echo   KOMPLETT-SETUP - Module 1-4
+echo ============================================================================
+echo.
+set /p "confirm=Fortfahren? (J/N): "
+if /i not "%confirm%"=="J" goto MAIN_MENU
+
+echo.
+echo   Starte Setup...
+echo.
+
+PowerShell.exe -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -RunAll
+
+echo.
+if %errorLevel% equ 0 (
+    color 0A
+    echo   [OK] Setup erfolgreich abgeschlossen!
+) else (
+    color 0E
+    echo   [!] Setup mit Warnungen abgeschlossen - Logs pruefen!
+)
+echo.
+pause
+goto MAIN_MENU
+
+:: ============================================================================
+:: EINZELNE MODULE
+:: ============================================================================
+:MODULE_1
+PowerShell.exe -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -Module 1
+pause
+goto MAIN_MENU
+
+:MODULE_2
+PowerShell.exe -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -Module 2
+pause
+goto MAIN_MENU
+
+:MODULE_3
+PowerShell.exe -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -Module 3
+pause
+goto MAIN_MENU
+
+:MODULE_4
+PowerShell.exe -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -Module 4
+pause
+goto MAIN_MENU
+
+:: ============================================================================
+:: DIAGNOSE
+:: ============================================================================
+:DIAGNOSE
+PowerShell.exe -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%scripts\Diagnose-Tool.ps1"
+pause
+goto MAIN_MENU
+
+:: ============================================================================
+:: LOG ANZEIGEN
+:: ============================================================================
+:VIEW_LOG
+cls
+echo.
+echo ============================================================================
+echo   LOG-DATEIEN
+echo ============================================================================
+echo.
+if exist "C:\CGM\Logs\" (
+    dir /b /o-d "C:\CGM\Logs\*.log" 2>nul
+    echo.
+    set /p "logfile=Log-Datei oeffnen (Name eingeben oder Enter fuer zurueck): "
+    if not "!logfile!"=="" (
+        if exist "C:\CGM\Logs\!logfile!" (
+            notepad "C:\CGM\Logs\!logfile!"
+        )
+    )
+) else (
+    echo   Keine Logs gefunden.
+)
+echo.
+pause
+goto MAIN_MENU
+
+:: ============================================================================
+:: ENDE
+:: ============================================================================
+:EXIT
+cls
+echo.
+echo   Windows 11 Setup Tool wird beendet...
+echo.
+timeout /t 1 >nul
+exit /b 0

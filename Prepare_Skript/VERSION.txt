@@ -1,0 +1,37 @@
+Windows 11 Setup Tool
+eXpletus Edition
+
+Version: 1.2
+Datum: November 2024
+Status: Produktiv
+
+Module:
+  [OK] Modul 1: Einstieg und Initialisierung
+  [OK] Modul 2: Cleanup
+  [OK] Modul 3: Optik und Ergonomie
+  [OK] Modul 4: Performance
+
+Aenderungen in v1.2:
+  + Professionelle Ordnerstruktur
+  + Eine einzige START.cmd mit Menue
+  + Firmen-Branding (eXpletus)
+  + Verbesserte Fehlerbehandlung
+  + Registry-Backup Fix
+  + Parameter-Unterstuetzung fuer Module
+  
+Firma:
+  eXpletus - IT-Systemhaus
+  www.eXpletus.de
+  Support@eXpletus.de
+  Tel.: [0391] 561 66 31
+
+Bekannte Einschraenkungen:
+  - Module 5-8 noch nicht implementiert
+  - Einige Registry-Keys benoetigen Neustart
+  - OneDrive wird deaktiviert, nicht deinstalliert
+
+Geplant fuer v1.3:
+  - Modul 5: Software-Installation (Chocolatey)
+  - Modul 6: Komponenten (Java, .NET)
+  - Modul 7: Funktionalitaet (UAC, Apps)
+  - Modul 8: ALBIS Spezifisch

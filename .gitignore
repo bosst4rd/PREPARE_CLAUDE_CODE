@@ -1,0 +1,76 @@
+# PowerShell GUI Tool - .gitignore
+
+# Logs
+Logs/*.log
+Logs/*.txt
+*.log
+
+# Configuration (user-specific)
+Config/config.json
+Config/*.user.json
+
+# Data files (user-specific)
+Data/*
+!Data/.gitkeep
+
+# Temporary files
+*.tmp
+*.temp
+~*
+
+# Backup files
+*.bak
+*.backup
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin
+$RECYCLE.BIN/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# PowerShell
+*.ps1xml
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Archives
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+
+# Package files
+*.nupkg
+*.snupkg
+
+# Error screenshots
+ErrorScreenshot_*
+
+# Session data
+*.session
+work/

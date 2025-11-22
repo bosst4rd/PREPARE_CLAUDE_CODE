@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<bidi:Schema xmlns:bidi="http://schemas.microsoft.com/windows/2005/03/printing/bidi">
+    <Property name="Printer">
+        <Property name="EPSONSCHEMA">
+            <Property name="PrinterMetaData">
+                <IndexedProperty name="DeviceID">
+                    <Value name="DeviceID" oid="1.3.6.1.4.1.1248.1.2.2.1.1.1.1" deviceIndex="false" type="BIDI_BLOB" drvPrinterEvent="false"/>
+                </IndexedProperty>
+            </Property>
+        </Property>
+    </Property>
+</bidi:Schema>

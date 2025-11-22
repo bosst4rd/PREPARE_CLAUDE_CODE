@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<bidi:Definition xmlns:bidi="http://schemas.microsoft.com/windows/2005/03/printing/bidi">
+  <Schema xmlns:nprt="http://schemas.microsoft.com/windows/2006/08/wdp/print">
+    <Property name="Printer">
+      <Property name="DeviceInfo">
+        <Value name="IEEE1284DeviceId" query="nprt:PrinterDescription" filter="nprt:PrinterDescription/nprt:DeviceId" type="BIDI_STRING"/>
+      </Property>
+    </Property>
+  </Schema>
+</bidi:Definition>
