@@ -151,24 +151,54 @@ function Invoke-Module2-Cleanup {
             $null = Backup-Registry "Modul2-Cleanup"
         }
 
-        # Widgets entfernen
+        # ======================================================================
+        # WIDGETS ENTFERNEN (mehrere Methoden)
+        # ======================================================================
         try {
+            $changedCount = 0
+
+            # Methode 1: User Registry
             $widgetsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
             if (-not (Test-Path $widgetsPath)) {
                 New-Item -Path $widgetsPath -Force | Out-Null
             }
             Set-ItemProperty -Path $widgetsPath -Name "TaskbarDa" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            $changedCount++
+
+            # Methode 2: Gruppenrichtlinie
+            try {
+                $policyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Dsh"
+                if (-not (Test-Path $policyPath)) {
+                    New-Item -Path $policyPath -Force | Out-Null
+                }
+                Set-ItemProperty -Path $policyPath -Name "AllowNewsAndInterests" -Value 0 -Type DWord -Force
+                $changedCount++
+            } catch {}
+
+            # Methode 3: Feeds/Wetter deaktivieren
+            try {
+                $feedsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Feeds"
+                if (-not (Test-Path $feedsPath)) {
+                    New-Item -Path $feedsPath -Force | Out-Null
+                }
+                Set-ItemProperty -Path $feedsPath -Name "ShellFeedsTaskbarViewMode" -Value 2 -Type DWord -Force -ErrorAction SilentlyContinue
+                Set-ItemProperty -Path $feedsPath -Name "IsFeedsAvailable" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+                $changedCount++
+            } catch {}
 
             # Task View Button entfernen
             Set-ItemProperty -Path $widgetsPath -Name "ShowTaskViewButton" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            $changedCount++
 
-            $results += "[OK] Widgets/Task View deaktiviert"
+            $results += "[OK] Widgets/News/Task View deaktiviert ($changedCount Aenderungen)"
         }
         catch {
             $results += "[WARNING] Widgets: $_"
         }
 
-        # Copilot entfernen
+        # ======================================================================
+        # COPILOT ENTFERNEN
+        # ======================================================================
         try {
             $copilotPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
             Set-ItemProperty -Path $copilotPath -Name "ShowCopilotButton" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
@@ -184,17 +214,45 @@ function Invoke-Module2-Cleanup {
             $results += "[WARNING] Copilot: $_"
         }
 
-        # OneDrive deaktivieren (Sync aus)
+        # ======================================================================
+        # ONEDRIVE DEINSTALLIEREN
+        # ======================================================================
         try {
+            # Aus Autostart entfernen
             $runPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
             Remove-ItemProperty -Path $runPath -Name "OneDrive" -ErrorAction SilentlyContinue
-            $results += "[OK] OneDrive Autostart deaktiviert"
+
+            # OneDrive Prozess beenden
+            Get-Process -Name OneDrive -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 1
+
+            # OneDrive deinstallieren
+            $oneDriveSetup = "$env:SystemRoot\SysWOW64\OneDriveSetup.exe"
+            if (-not (Test-Path $oneDriveSetup)) {
+                $oneDriveSetup = "$env:SystemRoot\System32\OneDriveSetup.exe"
+            }
+
+            if (Test-Path $oneDriveSetup) {
+                Start-Process -FilePath $oneDriveSetup -ArgumentList "/uninstall" -Wait -NoNewWindow -ErrorAction SilentlyContinue
+                Start-Sleep -Seconds 2
+                $results += "[OK] OneDrive deinstalliert"
+            } else {
+                $results += "[OK] OneDrive Autostart deaktiviert"
+            }
+
+            # OneDrive-Ordner entfernen
+            $oneDriveFolder = "$env:USERPROFILE\OneDrive"
+            if (Test-Path $oneDriveFolder) {
+                Remove-Item -Path $oneDriveFolder -Recurse -Force -ErrorAction SilentlyContinue
+            }
         }
         catch {
             $results += "[WARNING] OneDrive: $_"
         }
 
-        # Suche entfernen
+        # ======================================================================
+        # SUCHE ENTFERNEN
+        # ======================================================================
         try {
             $searchPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search"
             if (-not (Test-Path $searchPath)) {
@@ -207,7 +265,36 @@ function Invoke-Module2-Cleanup {
             $results += "[WARNING] Suche: $_"
         }
 
-        # Desktop bereinigen - Verknuepfungen
+        # ======================================================================
+        # TEAMS/CHAT ENTFERNEN
+        # ======================================================================
+        try {
+            # Chat Icon aus Taskbar
+            $chatPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+            Set-ItemProperty -Path $chatPath -Name "TaskbarMn" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+
+            # Teams Auto-Start deaktivieren
+            $teamsStartupPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+            Remove-ItemProperty -Path $teamsStartupPath -Name "com.squirrel.Teams.Teams" -ErrorAction SilentlyContinue
+            Remove-ItemProperty -Path $teamsStartupPath -Name "Microsoft Teams" -ErrorAction SilentlyContinue
+
+            # Teams UWP App deinstallieren
+            try {
+                $teamsApp = Get-AppxPackage -Name "*Teams*" -ErrorAction SilentlyContinue
+                if ($teamsApp) {
+                    $teamsApp | Remove-AppxPackage -ErrorAction SilentlyContinue
+                }
+            } catch {}
+
+            $results += "[OK] Teams/Chat entfernt"
+        }
+        catch {
+            $results += "[WARNING] Teams: $_"
+        }
+
+        # ======================================================================
+        # DESKTOP BEREINIGEN
+        # ======================================================================
         try {
             $desktop = [Environment]::GetFolderPath('Desktop')
             $publicDesktop = [Environment]::GetFolderPath('CommonDesktopDirectory')
@@ -215,10 +302,13 @@ function Invoke-Module2-Cleanup {
                 'Microsoft Edge.lnk',
                 'Microsoft Store.lnk',
                 'Outlook.lnk',
+                'Mail.lnk',
                 'Google Chrome.lnk',
                 'Firefox.lnk',
                 'Teams.lnk',
-                'OneDrive.lnk'
+                'OneDrive.lnk',
+                'Benutzer.lnk',
+                'Geraete.lnk'
             )
             $removedCount = 0
 
@@ -240,7 +330,9 @@ function Invoke-Module2-Cleanup {
             $results += "[WARNING] Desktop: $_"
         }
 
-        # Desktop-Icons ausblenden (Papierkorb, Dieser PC, etc.)
+        # ======================================================================
+        # DESKTOP-ICONS AUSBLENDEN
+        # ======================================================================
         try {
             $hideIconsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel"
             if (-not (Test-Path $hideIconsPath)) {
@@ -252,23 +344,17 @@ function Invoke-Module2-Cleanup {
             Set-ItemProperty -Path $hideIconsPath -Name "{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}" -Value 1 -Type DWord -Force
             # Benutzerordner ausblenden
             Set-ItemProperty -Path $hideIconsPath -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Value 1 -Type DWord -Force
-            $results += "[OK] Desktop-Icons ausgeblendet (Papierkorb, Netzwerk, Benutzer)"
+            # Systemsteuerung ausblenden
+            Set-ItemProperty -Path $hideIconsPath -Name "{5399E694-6CE5-4D6C-8FCE-1D8870FDCBA0}" -Value 1 -Type DWord -Force -ErrorAction SilentlyContinue
+            $results += "[OK] Desktop-Icons ausgeblendet"
         }
         catch {
             $results += "[WARNING] Desktop-Icons: $_"
         }
 
-        # Chat/Teams Icon aus Taskleiste entfernen
-        try {
-            $chatPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-            Set-ItemProperty -Path $chatPath -Name "TaskbarMn" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
-            $results += "[OK] Chat/Teams aus Taskleiste entfernt"
-        }
-        catch {
-            $results += "[WARNING] Chat-Icon: $_"
-        }
-
-        # Fax/XPS Drucker entfernen
+        # ======================================================================
+        # DRUCKER ENTFERNEN
+        # ======================================================================
         try {
             $fax = Get-Printer -Name "Fax" -ErrorAction SilentlyContinue
             if ($fax) {
@@ -313,53 +399,115 @@ function Invoke-Module3-OptikErgonomie {
             $null = Backup-Registry "Modul3-Optik"
         }
 
-        # Taskleiste linksbuendig
+        # ======================================================================
+        # TASKLEISTE KONFIGURIEREN
+        # ======================================================================
         try {
             $taskbarPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+            if (-not (Test-Path $taskbarPath)) {
+                New-Item -Path $taskbarPath -Force | Out-Null
+            }
+            # Linksbuendig
             Set-ItemProperty -Path $taskbarPath -Name "TaskbarAl" -Value 0 -Type DWord -Force
+            # Nie gruppieren
             Set-ItemProperty -Path $taskbarPath -Name "TaskbarGlomLevel" -Value 2 -Type DWord -Force
+            Set-ItemProperty -Path $taskbarPath -Name "MMTaskbarGlomLevel" -Value 2 -Type DWord -Force
             $results += "[OK] Taskleiste linksbuendig, nicht gruppiert"
         }
         catch {
             $results += "[WARNING] Taskleiste: $_"
         }
 
-        # Explorer-Einstellungen
+        # ======================================================================
+        # EXPLORER KONFIGURIEREN
+        # ======================================================================
         try {
             $explorerPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+            # Dateierweiterungen einblenden
             Set-ItemProperty -Path $explorerPath -Name "HideFileExt" -Value 0 -Type DWord -Force
+            # Ausgeblendete Dateien anzeigen
             Set-ItemProperty -Path $explorerPath -Name "Hidden" -Value 1 -Type DWord -Force
-            $results += "[OK] Dateierweiterungen sichtbar"
+            # Vollstaendigen Pfad anzeigen
+            Set-ItemProperty -Path $explorerPath -Name "FullPathAddress" -Value 1 -Type DWord -Force
+            $results += "[OK] Explorer: Erweiterungen, versteckte Dateien, vollstaendiger Pfad"
         }
         catch {
             $results += "[WARNING] Explorer: $_"
         }
 
-        # Bildschirmschoner deaktivieren
+        # ======================================================================
+        # BILDSCHIRMSCHONER DEAKTIVIEREN
+        # ======================================================================
         try {
             $screensaverPath = "HKCU:\Control Panel\Desktop"
             Set-ItemProperty -Path $screensaverPath -Name "ScreenSaveActive" -Value "0" -Force
+            Set-ItemProperty -Path $screensaverPath -Name "ScreenSaveTimeOut" -Value "0" -Force
             $results += "[OK] Bildschirmschoner deaktiviert"
         }
         catch {
             $results += "[WARNING] Bildschirmschoner: $_"
         }
 
-        # Desktop-Symbol: Dieser PC anzeigen
+        # ======================================================================
+        # LOCKSCREEN KONFIGURIEREN
+        # ======================================================================
         try {
+            $cdmPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
+            Set-ItemProperty -Path $cdmPath -Name "RotatingLockScreenEnabled" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            Set-ItemProperty -Path $cdmPath -Name "RotatingLockScreenOverlayEnabled" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            Set-ItemProperty -Path $cdmPath -Name "SubscribedContent-338387Enabled" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            $results += "[OK] Lockscreen-Werbung deaktiviert"
+        }
+        catch {
+            $results += "[WARNING] Lockscreen: $_"
+        }
+
+        # ======================================================================
+        # DESKTOP-SYMBOLE (Dieser PC anzeigen, sortiert)
+        # ======================================================================
+        try {
+            # Desktop-Icons VIEW aktivieren
+            $advancedPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+            Set-ItemProperty -Path $advancedPath -Name "HideIcons" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+
             $desktopIconsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel"
             if (-not (Test-Path $desktopIconsPath)) {
                 New-Item -Path $desktopIconsPath -Force | Out-Null
             }
-            # Dieser PC anzeigen
+
+            # Sequentielles Einblenden fuer korrekte Sortierung
+            # Schritt 1: ALLE Icons ausblenden
+            Set-ItemProperty -Path $desktopIconsPath -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -Value 1 -Type DWord -Force  # Dieser PC
+            Set-ItemProperty -Path $desktopIconsPath -Name "{645FF040-5081-101B-9F08-00AA002F954E}" -Value 1 -Type DWord -Force  # Papierkorb
+            Start-Sleep -Milliseconds 200
+
+            # Schritt 2: Dieser PC einblenden (oben)
             Set-ItemProperty -Path $desktopIconsPath -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -Value 0 -Type DWord -Force
-            $results += "[OK] Desktop-Symbol 'Dieser PC' aktiviert"
+            Start-Sleep -Milliseconds 100
+
+            # Schritt 3: Papierkorb einblenden (unten)
+            Set-ItemProperty -Path $desktopIconsPath -Name "{645FF040-5081-101B-9F08-00AA002F954E}" -Value 0 -Type DWord -Force
+
+            # Desktop-Icon Anordnung: Am Raster, KEIN Auto-Arrange
+            $desktopBagPath = "HKCU:\Software\Microsoft\Windows\Shell\Bags\1\Desktop"
+            if (-not (Test-Path $desktopBagPath)) {
+                New-Item -Path $desktopBagPath -Force | Out-Null
+            }
+            Set-ItemProperty -Path $desktopBagPath -Name "IconSize" -Value 48 -Type DWord -Force -ErrorAction SilentlyContinue
+            Set-ItemProperty -Path $desktopBagPath -Name "FFlags" -Value 1075839488 -Type DWord -Force -ErrorAction SilentlyContinue
+
+            # AutoArrange deaktivieren
+            Set-ItemProperty -Path $advancedPath -Name "AutoArrange" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+
+            $results += "[OK] Desktop-Symbole: Dieser PC + Papierkorb (sortiert, am Raster)"
         }
         catch {
             $results += "[WARNING] Desktop-Symbole: $_"
         }
 
-        # Hintergrund: Einfarbig schwarz setzen
+        # ======================================================================
+        # HINTERGRUND: SCHWARZ (EINFARBIG)
+        # ======================================================================
         try {
             $wallpaperPath = "HKCU:\Control Panel\Desktop"
             # Einfarbiger Hintergrund (keine Tapete)
@@ -382,7 +530,9 @@ function Invoke-Module3-OptikErgonomie {
             $results += "[WARNING] Hintergrund: $_"
         }
 
-        # Transparenz deaktivieren
+        # ======================================================================
+        # TRANSPARENZ DEAKTIVIEREN
+        # ======================================================================
         try {
             $personalizePath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
             Set-ItemProperty -Path $personalizePath -Name "EnableTransparency" -Value 0 -Type DWord -Force
@@ -392,9 +542,10 @@ function Invoke-Module3-OptikErgonomie {
             $results += "[WARNING] Transparenz: $_"
         }
 
-        # Animationen reduzieren (Performance)
+        # ======================================================================
+        # ANIMATIONEN REDUZIEREN
+        # ======================================================================
         try {
-            $visualPath = "HKCU:\Control Panel\Desktop\WindowMetrics"
             Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "UserPreferencesMask" -Value ([byte[]](0x90,0x12,0x03,0x80,0x10,0x00,0x00,0x00)) -Type Binary -Force
             $results += "[OK] Visuelle Effekte reduziert"
         }
@@ -402,14 +553,21 @@ function Invoke-Module3-OptikErgonomie {
             $results += "[WARNING] Animationen: $_"
         }
 
-        # Schnellstart deaktivieren
+        # ======================================================================
+        # ARBEITSGRUPPE: EXPLETUS
+        # ======================================================================
         try {
-            $fastBootPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power"
-            Set-ItemProperty -Path $fastBootPath -Name "HiberbootEnabled" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
-            $results += "[OK] Schnellstart deaktiviert"
+            $currentWorkgroup = (Get-WmiObject Win32_ComputerSystem).Workgroup
+            if ($currentWorkgroup -ne "EXPLETUS") {
+                $computer = Get-WmiObject Win32_ComputerSystem
+                $null = $computer.JoinDomainOrWorkgroup("EXPLETUS", $null, $null, $null, 1)
+                $results += "[OK] Arbeitsgruppe: EXPLETUS (Neustart erforderlich)"
+            } else {
+                $results += "[OK] Arbeitsgruppe bereits EXPLETUS"
+            }
         }
         catch {
-            $results += "[WARNING] Schnellstart: $_"
+            $results += "[WARNING] Arbeitsgruppe: $_"
         }
     }
     catch {
@@ -439,42 +597,148 @@ function Invoke-Module4-EnergiePerformance {
             $null = Backup-Registry "Modul4-Energie"
         }
 
-        # Hoechstleistung Energieplan
+        # ======================================================================
+        # AUTOSTART BEREINIGEN
+        # ======================================================================
         try {
+            $programsToRemove = @('OneDrive', 'Teams', 'Skype', 'Copilot')
+            $removedCount = 0
+
+            $hkcuRun = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+            $items = Get-ItemProperty -Path $hkcuRun -ErrorAction SilentlyContinue
+            if ($items) {
+                foreach ($program in $programsToRemove) {
+                    $items.PSObject.Properties | Where-Object { $_.Name -like "*$program*" } | ForEach-Object {
+                        Remove-ItemProperty -Path $hkcuRun -Name $_.Name -ErrorAction SilentlyContinue
+                        $removedCount++
+                    }
+                }
+            }
+
+            # OneDrive Sync deaktivieren
+            $onedrivePath = "HKCU:\Software\Microsoft\OneDrive"
+            if (Test-Path $onedrivePath) {
+                Set-ItemProperty -Path $onedrivePath -Name "DisableFileSyncNGSC" -Value 1 -Type DWord -Force -ErrorAction SilentlyContinue
+            }
+
+            $results += "[OK] Autostart bereinigt ($removedCount Programme)"
+        }
+        catch {
+            $results += "[WARNING] Autostart: $_"
+        }
+
+        # ======================================================================
+        # ENERGIEOPTIONEN
+        # ======================================================================
+        try {
+            # Hoechstleistung aktivieren
             $highPerf = powercfg /list | Select-String "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
             if ($highPerf) {
                 powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
                 $results += "[OK] Energieplan: Hoechstleistung aktiviert"
             } else {
-                $results += "[INFO] Hoechstleistung-Plan nicht verfuegbar"
+                powercfg /setactive 381b4222-f694-41f0-9685-ff5bb260df2e
+                $results += "[OK] Energieplan: Ausbalanciert (Hoechstleistung nicht verfuegbar)"
             }
+
+            # Alle Timeouts auf 0
+            powercfg /change monitor-timeout-ac 0
+            powercfg /change monitor-timeout-dc 0
+            powercfg /change disk-timeout-ac 0
+            powercfg /change standby-timeout-ac 0
+            powercfg /change standby-timeout-dc 0
+            powercfg /change hibernate-timeout-ac 0
+            $results += "[OK] Alle Timeouts auf 0 (nie ausschalten)"
         }
         catch {
             $results += "[WARNING] Energieplan: $_"
         }
 
-        # Hibernate deaktivieren
+        # ======================================================================
+        # SCHNELLSTART UND HIBERNATE DEAKTIVIEREN
+        # ======================================================================
         try {
+            $powerPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power"
+            Set-ItemProperty -Path $powerPath -Name "HiberbootEnabled" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
             powercfg /hibernate off 2>$null
-            $results += "[OK] Ruhezustand deaktiviert"
+            $results += "[OK] Schnellstart und Ruhezustand deaktiviert"
         }
         catch {
             $results += "[WARNING] Hibernate: $_"
         }
 
-        # Monitor nie ausschalten
+        # ======================================================================
+        # UAC MINIMIEREN
+        # ======================================================================
         try {
-            powercfg /change monitor-timeout-ac 0
-            powercfg /change monitor-timeout-dc 0
-            powercfg /change standby-timeout-ac 0
-            powercfg /change standby-timeout-dc 0
-            $results += "[OK] Monitor/Standby: Nie ausschalten"
+            $uacPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+            Set-ItemProperty -Path $uacPath -Name "ConsentPromptBehaviorAdmin" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            Set-ItemProperty -Path $uacPath -Name "PromptOnSecureDesktop" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            Set-ItemProperty -Path $uacPath -Name "EnableLUA" -Value 1 -Type DWord -Force -ErrorAction SilentlyContinue
+            $results += "[OK] UAC: Nie benachrichtigen"
         }
         catch {
-            $results += "[WARNING] Power-Timeout: $_"
+            $results += "[WARNING] UAC: $_"
         }
 
-        # Zwischenablage-Historie aktivieren
+        # ======================================================================
+        # STANDARDDRUCKER-VERWALTUNG DEAKTIVIEREN
+        # ======================================================================
+        try {
+            $printerPath = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Windows"
+            if (-not (Test-Path $printerPath)) {
+                New-Item -Path $printerPath -Force | Out-Null
+            }
+            Set-ItemProperty -Path $printerPath -Name "LegacyDefaultPrinterMode" -Value 1 -Type DWord -Force
+            $results += "[OK] Standarddrucker: Benutzer verwaltet (nicht Windows)"
+        }
+        catch {
+            $results += "[WARNING] Standarddrucker: $_"
+        }
+
+        # ======================================================================
+        # USB SELECTIVE SUSPEND DEAKTIVIEREN
+        # ======================================================================
+        try {
+            $activePlan = (powercfg /getactivescheme).Split()[3]
+            & powercfg /setacvalueindex $activePlan 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
+            & powercfg /setdcvalueindex $activePlan 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
+            & powercfg /setactive $activePlan
+            $results += "[OK] USB Selective Suspend deaktiviert"
+        }
+        catch {
+            $results += "[WARNING] USB Suspend: $_"
+        }
+
+        # ======================================================================
+        # NETZWERKADAPTER OPTIMIEREN
+        # ======================================================================
+        try {
+            $adapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
+            $optimizedCount = 0
+            foreach ($adapter in $adapters) {
+                $instanceId = $adapter.InterfaceGuid
+                $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4D36E972-E325-11CE-BFC1-08002BE10318}"
+                $subKeys = Get-ChildItem -Path $regPath -ErrorAction SilentlyContinue
+
+                foreach ($key in $subKeys) {
+                    $guid = Get-ItemProperty -Path $key.PSPath -Name "NetCfgInstanceId" -ErrorAction SilentlyContinue
+                    if ($guid.NetCfgInstanceId -eq $instanceId) {
+                        Set-ItemProperty -Path $key.PSPath -Name "PnPCapabilities" -Value 24 -Type DWord -ErrorAction SilentlyContinue
+                        $optimizedCount++
+                        break
+                    }
+                }
+            }
+            $results += "[OK] Netzwerkadapter optimiert ($optimizedCount Adapter)"
+        }
+        catch {
+            $results += "[WARNING] Netzwerkadapter: $_"
+        }
+
+        # ======================================================================
+        # ZWISCHENABLAGE-HISTORIE
+        # ======================================================================
         try {
             $clipboardPath = "HKCU:\Software\Microsoft\Clipboard"
             if (-not (Test-Path $clipboardPath)) {
@@ -487,7 +751,9 @@ function Invoke-Module4-EnergiePerformance {
             $results += "[WARNING] Zwischenablage: $_"
         }
 
-        # NumLock beim Start
+        # ======================================================================
+        # NUMLOCK BEIM START
+        # ======================================================================
         try {
             $numLockPath = "Registry::HKEY_USERS\.DEFAULT\Control Panel\Keyboard"
             Set-ItemProperty -Path $numLockPath -Name "InitialKeyboardIndicators" -Value "2" -Force -ErrorAction SilentlyContinue
@@ -497,32 +763,9 @@ function Invoke-Module4-EnergiePerformance {
             $results += "[WARNING] NumLock: $_"
         }
 
-        # UAC deaktivieren (auf niedrigste Stufe)
-        try {
-            $uacPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
-            Set-ItemProperty -Path $uacPath -Name "EnableLUA" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
-            Set-ItemProperty -Path $uacPath -Name "ConsentPromptBehaviorAdmin" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
-            $results += "[OK] UAC minimiert (Neustart erforderlich)"
-        }
-        catch {
-            $results += "[WARNING] UAC: $_"
-        }
-
-        # Windows Update: Nur manuell
-        try {
-            $wuPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
-            if (-not (Test-Path $wuPath)) {
-                New-Item -Path $wuPath -Force | Out-Null
-            }
-            Set-ItemProperty -Path $wuPath -Name "NoAutoUpdate" -Value 0 -Type DWord -Force
-            Set-ItemProperty -Path $wuPath -Name "AUOptions" -Value 2 -Type DWord -Force
-            $results += "[OK] Windows Update: Benachrichtigen vor Download"
-        }
-        catch {
-            $results += "[WARNING] Windows Update: $_"
-        }
-
-        # Telemetrie minimieren
+        # ======================================================================
+        # TELEMETRIE MINIMIEREN
+        # ======================================================================
         try {
             $telemetryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection"
             if (-not (Test-Path $telemetryPath)) {
@@ -535,7 +778,9 @@ function Invoke-Module4-EnergiePerformance {
             $results += "[WARNING] Telemetrie: $_"
         }
 
-        # Cortana deaktivieren
+        # ======================================================================
+        # CORTANA DEAKTIVIEREN
+        # ======================================================================
         try {
             $cortanaPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
             if (-not (Test-Path $cortanaPath)) {
@@ -548,7 +793,9 @@ function Invoke-Module4-EnergiePerformance {
             $results += "[WARNING] Cortana: $_"
         }
 
-        # Game Bar deaktivieren
+        # ======================================================================
+        # GAME BAR DEAKTIVIEREN
+        # ======================================================================
         try {
             $gamePath = "HKCU:\Software\Microsoft\GameBar"
             if (-not (Test-Path $gamePath)) {
@@ -560,16 +807,6 @@ function Invoke-Module4-EnergiePerformance {
         }
         catch {
             $results += "[WARNING] Game Bar: $_"
-        }
-
-        # Sperrbildschirm-Timeout
-        try {
-            $lockPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
-            Set-ItemProperty -Path $lockPath -Name "InactivityTimeoutSecs" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
-            $results += "[OK] Sperrbildschirm-Timeout deaktiviert"
-        }
-        catch {
-            $results += "[WARNING] Sperrbildschirm: $_"
         }
     }
     catch {
