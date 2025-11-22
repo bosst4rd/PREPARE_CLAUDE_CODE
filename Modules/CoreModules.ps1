@@ -207,10 +207,19 @@ function Invoke-Module2-Cleanup {
             $results += "[WARNING] Suche: $_"
         }
 
-        # Desktop bereinigen
+        # Desktop bereinigen - Verknuepfungen
         try {
             $desktop = [Environment]::GetFolderPath('Desktop')
-            $shortcutsToRemove = @('Microsoft Edge.lnk', 'Microsoft Store.lnk', 'Outlook.lnk')
+            $publicDesktop = [Environment]::GetFolderPath('CommonDesktopDirectory')
+            $shortcutsToRemove = @(
+                'Microsoft Edge.lnk',
+                'Microsoft Store.lnk',
+                'Outlook.lnk',
+                'Google Chrome.lnk',
+                'Firefox.lnk',
+                'Teams.lnk',
+                'OneDrive.lnk'
+            )
             $removedCount = 0
 
             foreach ($shortcut in $shortcutsToRemove) {
@@ -219,11 +228,44 @@ function Invoke-Module2-Cleanup {
                     Remove-Item -Path $path -Force -ErrorAction SilentlyContinue
                     $removedCount++
                 }
+                $publicPath = Join-Path $publicDesktop $shortcut
+                if (Test-Path $publicPath) {
+                    Remove-Item -Path $publicPath -Force -ErrorAction SilentlyContinue
+                    $removedCount++
+                }
             }
             $results += "[OK] Desktop bereinigt ($removedCount Verknuepfungen entfernt)"
         }
         catch {
             $results += "[WARNING] Desktop: $_"
+        }
+
+        # Desktop-Icons ausblenden (Papierkorb, Dieser PC, etc.)
+        try {
+            $hideIconsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel"
+            if (-not (Test-Path $hideIconsPath)) {
+                New-Item -Path $hideIconsPath -Force | Out-Null
+            }
+            # Papierkorb ausblenden
+            Set-ItemProperty -Path $hideIconsPath -Name "{645FF040-5081-101B-9F08-00AA002F954E}" -Value 1 -Type DWord -Force
+            # Netzwerk ausblenden
+            Set-ItemProperty -Path $hideIconsPath -Name "{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}" -Value 1 -Type DWord -Force
+            # Benutzerordner ausblenden
+            Set-ItemProperty -Path $hideIconsPath -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Value 1 -Type DWord -Force
+            $results += "[OK] Desktop-Icons ausgeblendet (Papierkorb, Netzwerk, Benutzer)"
+        }
+        catch {
+            $results += "[WARNING] Desktop-Icons: $_"
+        }
+
+        # Chat/Teams Icon aus Taskleiste entfernen
+        try {
+            $chatPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+            Set-ItemProperty -Path $chatPath -Name "TaskbarMn" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            $results += "[OK] Chat/Teams aus Taskleiste entfernt"
+        }
+        catch {
+            $results += "[WARNING] Chat-Icon: $_"
         }
 
         # Fax/XPS Drucker entfernen
@@ -303,20 +345,71 @@ function Invoke-Module3-OptikErgonomie {
             $results += "[WARNING] Bildschirmschoner: $_"
         }
 
-        # Desktop-Symbole aktivieren
+        # Desktop-Symbol: Dieser PC anzeigen
         try {
             $desktopIconsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel"
             if (-not (Test-Path $desktopIconsPath)) {
                 New-Item -Path $desktopIconsPath -Force | Out-Null
             }
-            # Dieser PC
+            # Dieser PC anzeigen
             Set-ItemProperty -Path $desktopIconsPath -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -Value 0 -Type DWord -Force
-            # Papierkorb
-            Set-ItemProperty -Path $desktopIconsPath -Name "{645FF040-5081-101B-9F08-00AA002F954E}" -Value 0 -Type DWord -Force
-            $results += "[OK] Desktop-Symbole aktiviert (Dieser PC, Papierkorb)"
+            $results += "[OK] Desktop-Symbol 'Dieser PC' aktiviert"
         }
         catch {
             $results += "[WARNING] Desktop-Symbole: $_"
+        }
+
+        # Hintergrund: Einfarbig schwarz setzen
+        try {
+            $wallpaperPath = "HKCU:\Control Panel\Desktop"
+            # Einfarbiger Hintergrund (keine Tapete)
+            Set-ItemProperty -Path $wallpaperPath -Name "WallPaper" -Value "" -Force
+            # Schwarze Hintergrundfarbe (RGB: 0 0 0)
+            $colorsPath = "HKCU:\Control Panel\Colors"
+            Set-ItemProperty -Path $colorsPath -Name "Background" -Value "0 0 0" -Force
+            # Desktop Refresh
+            Add-Type -TypeDefinition @"
+                using System.Runtime.InteropServices;
+                public class Wallpaper {
+                    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+                    public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+                }
+"@ -ErrorAction SilentlyContinue
+            [Wallpaper]::SystemParametersInfo(0x0014, 0, "", 0x0001 -bor 0x0002) | Out-Null
+            $results += "[OK] Hintergrund: Schwarz (einfarbig)"
+        }
+        catch {
+            $results += "[WARNING] Hintergrund: $_"
+        }
+
+        # Transparenz deaktivieren
+        try {
+            $personalizePath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+            Set-ItemProperty -Path $personalizePath -Name "EnableTransparency" -Value 0 -Type DWord -Force
+            $results += "[OK] Transparenz deaktiviert"
+        }
+        catch {
+            $results += "[WARNING] Transparenz: $_"
+        }
+
+        # Animationen reduzieren (Performance)
+        try {
+            $visualPath = "HKCU:\Control Panel\Desktop\WindowMetrics"
+            Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "UserPreferencesMask" -Value ([byte[]](0x90,0x12,0x03,0x80,0x10,0x00,0x00,0x00)) -Type Binary -Force
+            $results += "[OK] Visuelle Effekte reduziert"
+        }
+        catch {
+            $results += "[WARNING] Animationen: $_"
+        }
+
+        # Schnellstart deaktivieren
+        try {
+            $fastBootPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power"
+            Set-ItemProperty -Path $fastBootPath -Name "HiberbootEnabled" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            $results += "[OK] Schnellstart deaktiviert"
+        }
+        catch {
+            $results += "[WARNING] Schnellstart: $_"
         }
     }
     catch {
@@ -413,6 +506,70 @@ function Invoke-Module4-EnergiePerformance {
         }
         catch {
             $results += "[WARNING] UAC: $_"
+        }
+
+        # Windows Update: Nur manuell
+        try {
+            $wuPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
+            if (-not (Test-Path $wuPath)) {
+                New-Item -Path $wuPath -Force | Out-Null
+            }
+            Set-ItemProperty -Path $wuPath -Name "NoAutoUpdate" -Value 0 -Type DWord -Force
+            Set-ItemProperty -Path $wuPath -Name "AUOptions" -Value 2 -Type DWord -Force
+            $results += "[OK] Windows Update: Benachrichtigen vor Download"
+        }
+        catch {
+            $results += "[WARNING] Windows Update: $_"
+        }
+
+        # Telemetrie minimieren
+        try {
+            $telemetryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection"
+            if (-not (Test-Path $telemetryPath)) {
+                New-Item -Path $telemetryPath -Force | Out-Null
+            }
+            Set-ItemProperty -Path $telemetryPath -Name "AllowTelemetry" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            $results += "[OK] Telemetrie minimiert"
+        }
+        catch {
+            $results += "[WARNING] Telemetrie: $_"
+        }
+
+        # Cortana deaktivieren
+        try {
+            $cortanaPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
+            if (-not (Test-Path $cortanaPath)) {
+                New-Item -Path $cortanaPath -Force | Out-Null
+            }
+            Set-ItemProperty -Path $cortanaPath -Name "AllowCortana" -Value 0 -Type DWord -Force
+            $results += "[OK] Cortana deaktiviert"
+        }
+        catch {
+            $results += "[WARNING] Cortana: $_"
+        }
+
+        # Game Bar deaktivieren
+        try {
+            $gamePath = "HKCU:\Software\Microsoft\GameBar"
+            if (-not (Test-Path $gamePath)) {
+                New-Item -Path $gamePath -Force | Out-Null
+            }
+            Set-ItemProperty -Path $gamePath -Name "AutoGameModeEnabled" -Value 0 -Type DWord -Force
+            Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            $results += "[OK] Game Bar/DVR deaktiviert"
+        }
+        catch {
+            $results += "[WARNING] Game Bar: $_"
+        }
+
+        # Sperrbildschirm-Timeout
+        try {
+            $lockPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+            Set-ItemProperty -Path $lockPath -Name "InactivityTimeoutSecs" -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue
+            $results += "[OK] Sperrbildschirm-Timeout deaktiviert"
+        }
+        catch {
+            $results += "[WARNING] Sperrbildschirm: $_"
         }
     }
     catch {
