@@ -5,75 +5,105 @@
 function Invoke-Module8-ALBIS {
     Start-ModuleExecution "8. ALBIS SPEZIFISCH"
     $errors = 0
-    
+    $results = @()
+    $cfg = Get-ModuleConfig
+
     try {
-        if ($Global:Config.BackupRegistry) {
+        if ($cfg.BackupRegistry) {
             Backup-Registry "Modul8-ALBIS"
         }
-        
+
+        # ======================================================================
+        # GDT ORDNER
+        # ======================================================================
+        try {
+            if (-not (Test-Path "C:\GDT")) {
+                New-Item -Path "C:\GDT" -ItemType Directory -Force | Out-Null
+                $results += "[OK] C:\GDT Ordner erstellt"
+            } else {
+                $results += "[OK] C:\GDT Ordner existiert"
+            }
+        }
+        catch {
+            $results += "[WARNING] GDT-Ordner: $($_.Exception.Message)"
+        }
+
+        # ======================================================================
+        # ALBISWIN ORDNER
+        # ======================================================================
+        try {
+            if (-not (Test-Path "C:\CGM\ALBISWIN")) {
+                New-Item -Path "C:\CGM\ALBISWIN" -ItemType Directory -Force | Out-Null
+                $results += "[OK] C:\CGM\ALBISWIN Ordner erstellt"
+            } else {
+                $results += "[OK] C:\CGM\ALBISWIN Ordner existiert"
+            }
+        }
+        catch {
+            $results += "[WARNING] ALBISWIN-Ordner: $($_.Exception.Message)"
+        }
+
         # ======================================================================
         # LAUFWERKSBEZEICHNUNGEN
         # ======================================================================
-        Write-SetupLog "Laufwerksbezeichnungen..." -Level INFO
         try {
             # C: Laufwerk umbenennen
             $cDrive = Get-Volume -DriveLetter C -ErrorAction SilentlyContinue
             if ($cDrive) {
                 if ($cDrive.FileSystemLabel -ne "SYSTEM") {
                     Set-Volume -DriveLetter C -NewFileSystemLabel "SYSTEM" -ErrorAction Stop
-                    Write-SetupLog "  [OK] C: umbenannt in 'SYSTEM'" -Level SUCCESS
+                    $results += "[OK] C: umbenannt in 'SYSTEM'"
                 } else {
-                    Write-SetupLog "  [OK] C: bereits als 'SYSTEM' bezeichnet" -Level SUCCESS
+                    $results += "[OK] C: bereits als 'SYSTEM' bezeichnet"
                 }
             }
         }
         catch {
-            Write-SetupLog "  [X] Laufwerksbezeichnung: $($_.Exception.Message)" -Level ERROR
+            $results += "[WARNING] Laufwerksbezeichnung: $($_.Exception.Message)"
             $errors++
         }
-        
+
         # ======================================================================
         # EPSON LQ-400 DRUCKER
         # ======================================================================
-        Write-SetupLog "EPSON LQ-400 Drucker..." -Level INFO
         try {
             $epsonDriver = Get-PrinterDriver -Name "*EPSON*LQ*400*" -ErrorAction SilentlyContinue
-            
+
             if ($epsonDriver) {
-                Write-SetupLog "  [OK] EPSON LQ-400 Treiber gefunden" -Level SUCCESS
-            } else {
-                Write-SetupLog "  [i] EPSON LQ-400 Treiber nicht gefunden" -Level INFO
-                Write-SetupLog "  Hinweis: Treiber muss manuell installiert werden" -Level INFO
-                Write-SetupLog "  Download: https://www.epson.de/support" -Level INFO
-            }
-            
-            # Drucker hinzufuegen (wenn Treiber vorhanden)
-            if ($epsonDriver) {
+                $results += "[OK] EPSON LQ-400 Treiber gefunden"
+
+                # Drucker hinzufuegen (wenn Treiber vorhanden)
                 $epsonPrinter = Get-Printer -Name "EPSON LQ-400" -ErrorAction SilentlyContinue
                 if (-not $epsonPrinter) {
-                    Write-SetupLog "  [i] Drucker kann hinzugefuegt werden (Port muss konfiguriert sein)" -Level INFO
+                    $results += "[INFO] Drucker kann hinzugefuegt werden (Port muss konfiguriert sein)"
                 } else {
-                    Write-SetupLog "  [OK] EPSON LQ-400 Drucker bereits installiert" -Level SUCCESS
+                    $results += "[OK] EPSON LQ-400 Drucker bereits installiert"
                 }
+            } else {
+                $results += "[INFO] EPSON LQ-400 Treiber nicht gefunden"
+                $results += "[INFO] Hinweis: Treiber muss manuell installiert werden"
             }
         }
         catch {
-            Write-SetupLog "  [X] EPSON Drucker: $($_.Exception.Message)" -Level WARNING
+            $results += "[WARNING] EPSON Drucker: $($_.Exception.Message)"
         }
-        
+
         # ======================================================================
         # ALBIS-SPEZIFISCHE KONFIGURATION
         # ======================================================================
-        Write-SetupLog "ALBIS-Konfiguration..." -Level INFO
-        Write-SetupLog "  [i] ALBIS-spezifische Anpassungen" -Level INFO
-        Write-SetupLog "  Hinweis: Weitere Konfiguration nach Bedarf" -Level INFO
-        
+        $results += "[INFO] ALBIS-Vorbereitung abgeschlossen"
+        $results += "[INFO] Weitere Konfiguration nach ALBIS-Installation"
+
     }
     catch {
-        Write-SetupLog "Kritischer Fehler in Modul 8: $_" -Level ERROR
+        $results += "[ERROR] Kritischer Fehler: $_"
         $errors++
     }
-    
+
     Complete-ModuleExecution "8. ALBIS SPEZIFISCH" -ErrorCount $errors
-    return ($errors -eq 0)
+    return @{
+        Success = ($errors -eq 0)
+        Results = $results
+        Errors = $errors
+    }
 }

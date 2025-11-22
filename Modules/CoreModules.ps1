@@ -3,13 +3,15 @@
 # Basierend auf Win11-Setup.ps1 von eXpletus IT-Systemhaus
 # ==============================================================================
 
-# Globale Konfiguration
-$Global:Config = @{
-    LogPath = "C:\CGM\Logs"
-    LogFile = "Win11-Setup-$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
-    CGMFolder = "C:\CGM"
-    BackupRegistry = $true
-    Version = "1.3"
+# Modul-interne Konfiguration (wird bei Bedarf erstellt)
+function Get-ModuleConfig {
+    return @{
+        LogPath = "C:\CGM\Logs"
+        LogFile = "Win11-Setup-$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
+        CGMFolder = "C:\CGM"
+        BackupRegistry = $true
+        Version = "1.3"
+    }
 }
 
 # ==============================================================================
@@ -25,10 +27,11 @@ function Write-SetupLog {
     $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     $logMessage = "[$timestamp] [$Level] $Message"
 
-    if (-not (Test-Path $Global:Config.LogPath)) {
-        New-Item -Path $Global:Config.LogPath -ItemType Directory -Force | Out-Null
+    $cfg = Get-ModuleConfig
+    if (-not (Test-Path $cfg.LogPath)) {
+        New-Item -Path $cfg.LogPath -ItemType Directory -Force | Out-Null
     }
-    $logFile = Join-Path $Global:Config.LogPath $Global:Config.LogFile
+    $logFile = Join-Path $cfg.LogPath $cfg.LogFile
     Add-Content -Path $logFile -Value $logMessage -ErrorAction SilentlyContinue
 
     return $logMessage
@@ -58,7 +61,8 @@ function Backup-Registry {
     param([string]$BackupName)
 
     try {
-        $backupPath = Join-Path $Global:Config.CGMFolder "Registry-Backups"
+        $cfg = Get-ModuleConfig
+        $backupPath = Join-Path $cfg.CGMFolder "Registry-Backups"
         if (-not (Test-Path $backupPath)) {
             New-Item -Path $backupPath -ItemType Directory -Force | Out-Null
         }
@@ -81,6 +85,7 @@ function Invoke-Module1-Einstieg {
     Start-ModuleExecution "1. EINSTIEG - Admin-Pruefung und Initialisierung"
     $errors = 0
     $results = @()
+    $cfg = Get-ModuleConfig
 
     try {
         # Admin-Check
@@ -92,21 +97,21 @@ function Invoke-Module1-Einstieg {
         }
 
         # CGM-Ordner erstellen
-        if (-not (Test-Path $Global:Config.CGMFolder)) {
-            New-Item -Path $Global:Config.CGMFolder -ItemType Directory -Force | Out-Null
-            $results += "[OK] Ordner erstellt: $($Global:Config.CGMFolder)"
+        if (-not (Test-Path $cfg.CGMFolder)) {
+            New-Item -Path $cfg.CGMFolder -ItemType Directory -Force | Out-Null
+            $results += "[OK] Ordner erstellt: $($cfg.CGMFolder)"
         } else {
-            $results += "[OK] Ordner existiert: $($Global:Config.CGMFolder)"
+            $results += "[OK] Ordner existiert: $($cfg.CGMFolder)"
         }
 
         # Log-Ordner erstellen
-        if (-not (Test-Path $Global:Config.LogPath)) {
-            New-Item -Path $Global:Config.LogPath -ItemType Directory -Force | Out-Null
-            $results += "[OK] Log-Ordner erstellt: $($Global:Config.LogPath)"
+        if (-not (Test-Path $cfg.LogPath)) {
+            New-Item -Path $cfg.LogPath -ItemType Directory -Force | Out-Null
+            $results += "[OK] Log-Ordner erstellt: $($cfg.LogPath)"
         }
 
         # Registry-Backup
-        if ($Global:Config.BackupRegistry) {
+        if ($cfg.BackupRegistry) {
             if (Backup-Registry "Initial") {
                 $results += "[OK] Registry-Backup erstellt"
             }
@@ -139,9 +144,10 @@ function Invoke-Module2-Cleanup {
     Start-ModuleExecution "2. CLEANUP - Widgets, Pins, Desktop"
     $errors = 0
     $results = @()
+    $cfg = Get-ModuleConfig
 
     try {
-        if ($Global:Config.BackupRegistry) {
+        if ($cfg.BackupRegistry) {
             Backup-Registry "Modul2-Cleanup"
         }
 
@@ -258,9 +264,10 @@ function Invoke-Module3-OptikErgonomie {
     Start-ModuleExecution "3. OPTIK und ERGONOMIE"
     $errors = 0
     $results = @()
+    $cfg = Get-ModuleConfig
 
     try {
-        if ($Global:Config.BackupRegistry) {
+        if ($cfg.BackupRegistry) {
             Backup-Registry "Modul3-Optik"
         }
 
@@ -332,9 +339,10 @@ function Invoke-Module4-EnergiePerformance {
     Start-ModuleExecution "4. ENERGIE und PERFORMANCE"
     $errors = 0
     $results = @()
+    $cfg = Get-ModuleConfig
 
     try {
-        if ($Global:Config.BackupRegistry) {
+        if ($cfg.BackupRegistry) {
             Backup-Registry "Modul4-Energie"
         }
 
