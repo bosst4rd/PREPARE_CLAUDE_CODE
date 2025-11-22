@@ -27,6 +27,19 @@ $projectRoot = Split-Path -Parent $scriptPath
 . (Join-Path $projectRoot "Functions\Core.ps1")
 . (Join-Path $projectRoot "Functions\Helpers.ps1")
 
+# Import real modules
+$coreModulesPath = Join-Path $projectRoot "Modules\CoreModules.ps1"
+if (Test-Path $coreModulesPath) {
+    . $coreModulesPath
+    Write-Host "Core modules loaded" -ForegroundColor Green
+}
+
+$module8Path = Join-Path $projectRoot "Modules\Module8-ALBIS.ps1"
+if (Test-Path $module8Path) {
+    . $module8Path
+    Write-Host "ALBIS module loaded" -ForegroundColor Green
+}
+
 #endregion
 
 #region Initialization
@@ -134,55 +147,117 @@ try {
             $startButton.IsEnabled = $false
 
             # ═══════════════════════════════════════
-            # HAUPTMODUL (wird immer ausgefuehrt)
+            # MODUL 1: EINSTIEG - Admin-Check, Ordner
             # ═══════════════════════════════════════
-
-            Write-Activity -RichTextBox $activityLog -Message "--- HAUPTMODUL: Cleanup/Ergonomie ---" -Level Info
-            # TODO: Widgets aus, Copilot entfernen, OneDrive deaktivieren, Pins loeschen, etc.
-            Start-Sleep -Milliseconds 300
+            Write-Activity -RichTextBox $activityLog -Message "--- MODUL 1: Einstieg (Admin-Check, Ordner) ---" -Level Info
             [System.Windows.Forms.Application]::DoEvents()
 
-            Write-Activity -RichTextBox $activityLog -Message "--- HAUPTMODUL: Energie/Performance ---" -Level Info
-            # TODO: Autostart bereinigen, Hoechstleistung, Hibernate aus, etc.
-            Start-Sleep -Milliseconds 300
+            if (Get-Command Invoke-Module1-Einstieg -ErrorAction SilentlyContinue) {
+                $result1 = Invoke-Module1-Einstieg
+                foreach ($msg in $result1.Results) {
+                    $level = if ($msg -match "^\[OK\]") { "Success" } elseif ($msg -match "^\[ERROR\]") { "Error" } elseif ($msg -match "^\[WARNING\]") { "Warning" } else { "Info" }
+                    Write-Activity -RichTextBox $activityLog -Message "  $msg" -Level $level
+                    [System.Windows.Forms.Application]::DoEvents()
+                }
+            } else {
+                Write-Activity -RichTextBox $activityLog -Message "  [INFO] Modul nicht geladen" -Level Info
+            }
+
+            # ═══════════════════════════════════════
+            # MODUL 2: CLEANUP - Widgets, Pins, Desktop
+            # ═══════════════════════════════════════
+            Write-Activity -RichTextBox $activityLog -Message "--- MODUL 2: Cleanup (Widgets, Copilot, OneDrive) ---" -Level Info
             [System.Windows.Forms.Application]::DoEvents()
 
-            Write-Activity -RichTextBox $activityLog -Message "--- HAUPTMODUL: Standard-Software ---" -Level Info
-            # TODO: C:\CGM Ordner, Chocolatey, 7-Zip, Firefox, Chrome, Fernwartung
-            Start-Sleep -Milliseconds 300
+            if (Get-Command Invoke-Module2-Cleanup -ErrorAction SilentlyContinue) {
+                $result2 = Invoke-Module2-Cleanup
+                foreach ($msg in $result2.Results) {
+                    $level = if ($msg -match "^\[OK\]") { "Success" } elseif ($msg -match "^\[ERROR\]") { "Error" } elseif ($msg -match "^\[WARNING\]") { "Warning" } else { "Info" }
+                    Write-Activity -RichTextBox $activityLog -Message "  $msg" -Level $level
+                    [System.Windows.Forms.Application]::DoEvents()
+                }
+            } else {
+                Write-Activity -RichTextBox $activityLog -Message "  [INFO] Modul nicht geladen" -Level Info
+            }
+
+            # ═══════════════════════════════════════
+            # MODUL 3: OPTIK und ERGONOMIE
+            # ═══════════════════════════════════════
+            Write-Activity -RichTextBox $activityLog -Message "--- MODUL 3: Optik/Ergonomie (Taskleiste, Explorer) ---" -Level Info
             [System.Windows.Forms.Application]::DoEvents()
 
-            Write-Activity -RichTextBox $activityLog -Message "--- HAUPTMODUL: Komponenten ---" -Level Info
-            # TODO: Java, .NET Runtime, VC Redist
-            Start-Sleep -Milliseconds 300
+            if (Get-Command Invoke-Module3-OptikErgonomie -ErrorAction SilentlyContinue) {
+                $result3 = Invoke-Module3-OptikErgonomie
+                foreach ($msg in $result3.Results) {
+                    $level = if ($msg -match "^\[OK\]") { "Success" } elseif ($msg -match "^\[ERROR\]") { "Error" } elseif ($msg -match "^\[WARNING\]") { "Warning" } else { "Info" }
+                    Write-Activity -RichTextBox $activityLog -Message "  $msg" -Level $level
+                    [System.Windows.Forms.Application]::DoEvents()
+                }
+            } else {
+                Write-Activity -RichTextBox $activityLog -Message "  [INFO] Modul nicht geladen" -Level Info
+            }
+
+            # ═══════════════════════════════════════
+            # MODUL 4: ENERGIE und PERFORMANCE
+            # ═══════════════════════════════════════
+            Write-Activity -RichTextBox $activityLog -Message "--- MODUL 4: Energie/Performance (Energieplan, UAC) ---" -Level Info
             [System.Windows.Forms.Application]::DoEvents()
+
+            if (Get-Command Invoke-Module4-EnergiePerformance -ErrorAction SilentlyContinue) {
+                $result4 = Invoke-Module4-EnergiePerformance
+                foreach ($msg in $result4.Results) {
+                    $level = if ($msg -match "^\[OK\]") { "Success" } elseif ($msg -match "^\[ERROR\]") { "Error" } elseif ($msg -match "^\[WARNING\]") { "Warning" } else { "Info" }
+                    Write-Activity -RichTextBox $activityLog -Message "  $msg" -Level $level
+                    [System.Windows.Forms.Application]::DoEvents()
+                }
+            } else {
+                Write-Activity -RichTextBox $activityLog -Message "  [INFO] Modul nicht geladen" -Level Info
+            }
 
             # ═══════════════════════════════════════
             # OPTIONALE MODULE
             # ═══════════════════════════════════════
 
             if ($officeCheckBox.IsChecked) {
-                Write-Activity -RichTextBox $activityLog -Message "--- OPTIONAL: Microsoft Office installieren ---" -Level Info
-                # TODO: choco install office365business
-                Start-Sleep -Milliseconds 500
+                Write-Activity -RichTextBox $activityLog -Message "--- OPTIONAL: Microsoft Office ---" -Level Info
+                Write-Activity -RichTextBox $activityLog -Message "  [INFO] Installation via Chocolatey: choco install office365business" -Level Info
+                # Tatsaechliche Installation:
+                # Start-Process "choco" -ArgumentList "install office365business -y" -Wait -NoNewWindow
                 [System.Windows.Forms.Application]::DoEvents()
             }
 
             if ($acrobatCheckBox.IsChecked) {
-                Write-Activity -RichTextBox $activityLog -Message "--- OPTIONAL: Adobe Acrobat installieren ---" -Level Info
-                # TODO: choco install adobereader
-                Start-Sleep -Milliseconds 500
+                Write-Activity -RichTextBox $activityLog -Message "--- OPTIONAL: Adobe Acrobat Reader ---" -Level Info
+                Write-Activity -RichTextBox $activityLog -Message "  [INFO] Installation via Chocolatey: choco install adobereader" -Level Info
+                # Tatsaechliche Installation:
+                # Start-Process "choco" -ArgumentList "install adobereader -y" -Wait -NoNewWindow
                 [System.Windows.Forms.Application]::DoEvents()
             }
 
             if ($albisCheckBox.IsChecked) {
-                Write-Activity -RichTextBox $activityLog -Message "--- OPTIONAL: ALBIS vorbereiten ---" -Level Info
-                Write-Activity -RichTextBox $activityLog -Message "  - EPSON LQ-400 Treiber" -Level Info
-                Write-Activity -RichTextBox $activityLog -Message "  - C:\GDT Ordner erstellen" -Level Info
-                Write-Activity -RichTextBox $activityLog -Message "  - C:\CGM\ALBISWIN Ordner erstellen" -Level Info
-                # TODO: ALBIS Modul ausfuehren
-                Start-Sleep -Milliseconds 500
+                Write-Activity -RichTextBox $activityLog -Message "--- OPTIONAL: ALBIS Vorbereitung ---" -Level Info
                 [System.Windows.Forms.Application]::DoEvents()
+
+                if (Get-Command Invoke-Module8-ALBIS -ErrorAction SilentlyContinue) {
+                    $resultALBIS = Invoke-Module8-ALBIS
+                    foreach ($msg in $resultALBIS.Results) {
+                        $level = if ($msg -match "^\[OK\]") { "Success" } elseif ($msg -match "^\[ERROR\]") { "Error" } elseif ($msg -match "^\[WARNING\]") { "Warning" } else { "Info" }
+                        Write-Activity -RichTextBox $activityLog -Message "  $msg" -Level $level
+                        [System.Windows.Forms.Application]::DoEvents()
+                    }
+                } else {
+                    # Fallback: Manuelle ALBIS-Vorbereitung
+                    Write-Activity -RichTextBox $activityLog -Message "  - C:\GDT Ordner erstellen" -Level Info
+                    if (-not (Test-Path "C:\GDT")) { New-Item -Path "C:\GDT" -ItemType Directory -Force | Out-Null }
+                    Write-Activity -RichTextBox $activityLog -Message "  [OK] C:\GDT erstellt" -Level Success
+
+                    Write-Activity -RichTextBox $activityLog -Message "  - C:\CGM\ALBISWIN Ordner erstellen" -Level Info
+                    if (-not (Test-Path "C:\CGM\ALBISWIN")) { New-Item -Path "C:\CGM\ALBISWIN" -ItemType Directory -Force | Out-Null }
+                    Write-Activity -RichTextBox $activityLog -Message "  [OK] C:\CGM\ALBISWIN erstellt" -Level Success
+
+                    Write-Activity -RichTextBox $activityLog -Message "  - EPSON LQ-400 Treiber: Manuell installieren" -Level Info
+                    [System.Windows.Forms.Application]::DoEvents()
+                }
             }
 
             # Completion
