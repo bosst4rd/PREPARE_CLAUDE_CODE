@@ -1,25 +1,42 @@
 @echo off
-REM PowerShell GUI Tool Launcher
-REM Quick start batch file for Windows
+:: ============================================================================
+:: PREPARE_CLAUDE_CODE - Windows 11 Vorbereitung
+:: Start-Skript mit automatischer Admin-Erhöhung
+:: ============================================================================
 
-echo Starting PowerShell GUI Tool...
+title Windows 11 Vorbereitung
+
+:: Pruefe auf Admin-Rechte
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Starte als Administrator...
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b
+)
+
+:: Wechsle in das Skript-Verzeichnis
+cd /d "%~dp0"
+
+echo ============================================
+echo  Windows 11 Vorbereitung - Starte...
+echo ============================================
 echo.
 
-REM Check if PowerShell is available
+:: Check if PowerShell is available
 where powershell >nul 2>nul
 if %errorlevel% neq 0 (
-    echo ERROR: PowerShell not found!
-    echo Please install PowerShell 5.1 or higher.
+    echo FEHLER: PowerShell nicht gefunden!
+    echo Bitte PowerShell 5.1 oder hoeher installieren.
     pause
     exit /b 1
 )
 
-REM Launch the PowerShell script
-powershell.exe -ExecutionPolicy Bypass -File "%~dp0Scripts\Main.ps1"
+:: Launch the PowerShell script
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "Scripts\Main.ps1"
 
-REM Check exit code
+:: Check exit code
 if %errorlevel% neq 0 (
     echo.
-    echo Application exited with error code: %errorlevel%
+    echo Anwendung mit Fehlercode beendet: %errorlevel%
     pause
 )
