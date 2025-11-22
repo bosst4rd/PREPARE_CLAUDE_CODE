@@ -1,0 +1,61 @@
+═══════════════════════════════════════════════════════════════════════════
+  Windows 11 Setup Tool v1.2 - eXpletus Edition
+═══════════════════════════════════════════════════════════════════════════
+
+🚀 SO STARTEN:
+
+   1. Rechtsklick auf:  START.cmd
+   2. Waehlen: "Als Administrator ausfuehren"
+   3. Im Menue navigieren
+
+
+📋 OPTIONEN IM MENUE:
+
+   [1] Komplett-Setup     - Alle Module automatisch
+   [2] Einzelne Module    - Gezielt einzeln ausfuehren
+   [3] Test-Modus         - Nur Module 1-2 testen
+   [T] System-Check       - Vor dem Setup pruefen
+   [D] Diagnose           - Nach dem Setup pruefen
+
+
+✅ WAS WIRD GEMACHT:
+
+   Module 1: Initialisierung + Backups
+   Module 2: Cleanup (Widgets, Copilot, Desktop)
+   Module 3: Optik (Taskleiste, Explorer)
+   Module 4: Performance (Energie, Autostart)
+
+
+📂 ORDNERSTRUKTUR:
+
+   START.cmd          ← Hier starten!
+   scripts/           Alle PowerShell-Skripte
+   images/            Firmen-Wallpaper
+   docs/              Dokumentation
+   backups/           (wird automatisch befuellt)
+
+
+⚠️ WICHTIG:
+
+   ✓ MUSS als Administrator ausgefuehrt werden!
+   ✓ Alle Dateien im Ordner belassen!
+   ✓ Nach Setup System neu starten!
+
+
+📁 LOGS und BACKUPS:
+
+   Logs:    C:\CGM\Logs\
+   Backups: C:\CGM\Registry-Backups\
+
+
+📞 SUPPORT:
+
+   eXpletus - IT-Systemhaus
+   Web:      www.eXpletus.de
+   EMail:    Support@eXpletus.de
+   Tel.:     [0391] 561 66 31
+
+
+═══════════════════════════════════════════════════════════════════════════
+Mehr Infos: Siehe README.md im Hauptordner
+═══════════════════════════════════════════════════════════════════════════

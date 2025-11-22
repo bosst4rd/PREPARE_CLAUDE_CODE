@@ -1,0 +1,31 @@
+Windows 11 Setup Tool
+eXpletus Edition
+
+Version: 2.3
+Datum: 15. November 2024
+Status: Produktiv
+
+Module:
+  [OK] Modul 1: Einstieg
+  [OK] Modul 2: Cleanup
+  [OK] Modul 3: Optik (MINIMAL-FIX)
+  [OK] Modul 4: Performance
+  [OK] Modul 5: Software
+  [OK] Modul 6: Komponenten
+  [OK] Modul 7: Funktionalität
+  [OK] Modul 8: ALBIS
+
+Änderungen in v2.3 (MINIMAL-FIX):
+  - Desktop-Icons Code ENTFERNT (Transparenz-Bug)
+  - Explorer-Neustart VEREINFACHT (ohne Tricks)
+  - Keine weiteren Änderungen
+
+Firma:
+  eXpletus IT-Systemhaus
+  www.eXpletus.de
+  Support@eXpletus.de
+  Tel.: [0391] 561 66 31
+
+WICHTIG:
+  - Desktop-Icons manuell aktivieren!
+  - Rechtsklick Desktop -> Ansicht -> Desktopsymbole
