@@ -10,7 +10,7 @@ function Invoke-Module8-ALBIS {
 
     try {
         if ($cfg.BackupRegistry) {
-            Backup-Registry "Modul8-ALBIS"
+            $null = Backup-Registry "Modul8-ALBIS"
         }
 
         # ======================================================================

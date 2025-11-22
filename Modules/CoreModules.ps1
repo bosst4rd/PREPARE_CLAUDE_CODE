@@ -111,7 +111,8 @@ function Invoke-Module1-Einstieg {
 
         # Registry-Backup
         if ($cfg.BackupRegistry) {
-            if (Backup-Registry "Initial") {
+            $backupResult = Backup-Registry "Initial"
+            if ($backupResult) {
                 $results += "[OK] Registry-Backup erstellt"
             }
         }
@@ -147,7 +148,7 @@ function Invoke-Module2-Cleanup {
 
     try {
         if ($cfg.BackupRegistry) {
-            Backup-Registry "Modul2-Cleanup"
+            $null = Backup-Registry "Modul2-Cleanup"
         }
 
         # Widgets entfernen
@@ -267,7 +268,7 @@ function Invoke-Module3-OptikErgonomie {
 
     try {
         if ($cfg.BackupRegistry) {
-            Backup-Registry "Modul3-Optik"
+            $null = Backup-Registry "Modul3-Optik"
         }
 
         # Taskleiste linksbuendig
@@ -342,7 +343,7 @@ function Invoke-Module4-EnergiePerformance {
 
     try {
         if ($cfg.BackupRegistry) {
-            Backup-Registry "Modul4-Energie"
+            $null = Backup-Registry "Modul4-Energie"
         }
 
         # Hoechstleistung Energieplan
