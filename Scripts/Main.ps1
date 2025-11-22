@@ -79,12 +79,10 @@ try {
     # Main controls
     $startButton = Get-XamlObject -Window $window -Name "StartButton"
 
-    # Element checkboxes
-    $element1CheckBox = Get-XamlObject -Window $window -Name "Element1CheckBox"
-    $element2CheckBox = Get-XamlObject -Window $window -Name "Element2CheckBox"
-    $element3CheckBox = Get-XamlObject -Window $window -Name "Element3CheckBox"
-    $element4CheckBox = Get-XamlObject -Window $window -Name "Element4CheckBox"
-    $element5CheckBox = Get-XamlObject -Window $window -Name "Element5CheckBox"
+    # Optional software checkboxes
+    $officeCheckBox = Get-XamlObject -Window $window -Name "OfficeCheckBox"
+    $acrobatCheckBox = Get-XamlObject -Window $window -Name "AcrobatCheckBox"
+    $albisCheckBox = Get-XamlObject -Window $window -Name "ALBISCheckBox"
 
     # Option checkboxes
     $verboseLoggingCheckBox = Get-XamlObject -Window $window -Name "VerboseLoggingCheckBox"
@@ -107,20 +105,11 @@ try {
     # Start Button Click
     $startButton.Add_Click({
         try {
-            # Get selected elements
-            $selectedElements = @()
-            if ($element1CheckBox.IsChecked) { $selectedElements += "Element 1" }
-            if ($element2CheckBox.IsChecked) { $selectedElements += "Element 2" }
-            if ($element3CheckBox.IsChecked) { $selectedElements += "Element 3" }
-            if ($element4CheckBox.IsChecked) { $selectedElements += "Element 4" }
-            if ($element5CheckBox.IsChecked) { $selectedElements += "Element 5" }
-
-            # Validate at least one element is selected
-            if ($selectedElements.Count -eq 0) {
-                Write-Activity -RichTextBox $activityLog -Message "Kein Element ausgewählt!" -Level Warning
-                Show-MessageDialog -Title "Warnung" -Message "Bitte wählen Sie mindestens ein Element aus." -Type Warning
-                return
-            }
+            # Get selected optional software
+            $selectedSoftware = @()
+            if ($officeCheckBox.IsChecked) { $selectedSoftware += "Microsoft Office" }
+            if ($acrobatCheckBox.IsChecked) { $selectedSoftware += "Adobe Acrobat" }
+            if ($albisCheckBox.IsChecked) { $selectedSoftware += "ALBIS" }
 
             # Get options
             $verboseLogging = $verboseLoggingCheckBox.IsChecked
@@ -128,39 +117,85 @@ try {
 
             # Start processing
             Write-Activity -RichTextBox $activityLog -Message "═══════════════════════════════════════" -Level Info
-            Write-Activity -RichTextBox $activityLog -Message "Starte Verarbeitung..." -Level Info
-            Write-Activity -RichTextBox $activityLog -Message "Ausgewählte Elemente: $($selectedElements -join ', ')" -Level Info
+            Write-Activity -RichTextBox $activityLog -Message "Starte Vorbereitung..." -Level Info
+
+            if ($selectedSoftware.Count -gt 0) {
+                Write-Activity -RichTextBox $activityLog -Message "Optionale Software: $($selectedSoftware -join ', ')" -Level Info
+            } else {
+                Write-Activity -RichTextBox $activityLog -Message "Keine optionale Software ausgewaehlt" -Level Info
+            }
+
             Write-Activity -RichTextBox $activityLog -Message "Detaillierte Protokollierung: $verboseLogging" -Level Debug
             Write-Activity -RichTextBox $activityLog -Message "Backup erstellen: $createBackup" -Level Debug
 
-            Write-StatusBar -Label $statusLabel -Message "Verarbeitung läuft..." -ProgressBar $statusProgressBar -ShowProgress $true
+            Write-StatusBar -Label $statusLabel -Message "Vorbereitung laeuft..." -ProgressBar $statusProgressBar -ShowProgress $true
 
             # Disable start button during processing
             $startButton.IsEnabled = $false
 
-            # TODO: Hier kommt Ihre Verarbeitungslogik hin
-            # Beispiel: Elemente sammeln, verarbeiten, etc.
+            # ═══════════════════════════════════════
+            # HAUPTMODUL (wird immer ausgefuehrt)
+            # ═══════════════════════════════════════
 
-            # Simulate processing each selected element
-            foreach ($element in $selectedElements) {
-                Write-Activity -RichTextBox $activityLog -Message "Verarbeite $element..." -Level Info
+            Write-Activity -RichTextBox $activityLog -Message "--- HAUPTMODUL: Cleanup/Ergonomie ---" -Level Info
+            # TODO: Widgets aus, Copilot entfernen, OneDrive deaktivieren, Pins loeschen, etc.
+            Start-Sleep -Milliseconds 300
+            [System.Windows.Forms.Application]::DoEvents()
+
+            Write-Activity -RichTextBox $activityLog -Message "--- HAUPTMODUL: Energie/Performance ---" -Level Info
+            # TODO: Autostart bereinigen, Hoechstleistung, Hibernate aus, etc.
+            Start-Sleep -Milliseconds 300
+            [System.Windows.Forms.Application]::DoEvents()
+
+            Write-Activity -RichTextBox $activityLog -Message "--- HAUPTMODUL: Standard-Software ---" -Level Info
+            # TODO: C:\CGM Ordner, Chocolatey, 7-Zip, Firefox, Chrome, Fernwartung
+            Start-Sleep -Milliseconds 300
+            [System.Windows.Forms.Application]::DoEvents()
+
+            Write-Activity -RichTextBox $activityLog -Message "--- HAUPTMODUL: Komponenten ---" -Level Info
+            # TODO: Java, .NET Runtime, VC Redist
+            Start-Sleep -Milliseconds 300
+            [System.Windows.Forms.Application]::DoEvents()
+
+            # ═══════════════════════════════════════
+            # OPTIONALE MODULE
+            # ═══════════════════════════════════════
+
+            if ($officeCheckBox.IsChecked) {
+                Write-Activity -RichTextBox $activityLog -Message "--- OPTIONAL: Microsoft Office installieren ---" -Level Info
+                # TODO: choco install office365business
                 Start-Sleep -Milliseconds 500
+                [System.Windows.Forms.Application]::DoEvents()
+            }
 
-                # Force UI update
+            if ($acrobatCheckBox.IsChecked) {
+                Write-Activity -RichTextBox $activityLog -Message "--- OPTIONAL: Adobe Acrobat installieren ---" -Level Info
+                # TODO: choco install adobereader
+                Start-Sleep -Milliseconds 500
+                [System.Windows.Forms.Application]::DoEvents()
+            }
+
+            if ($albisCheckBox.IsChecked) {
+                Write-Activity -RichTextBox $activityLog -Message "--- OPTIONAL: ALBIS vorbereiten ---" -Level Info
+                Write-Activity -RichTextBox $activityLog -Message "  - EPSON LQ-400 Treiber" -Level Info
+                Write-Activity -RichTextBox $activityLog -Message "  - C:\GDT Ordner erstellen" -Level Info
+                Write-Activity -RichTextBox $activityLog -Message "  - C:\CGM\ALBISWIN Ordner erstellen" -Level Info
+                # TODO: ALBIS Modul ausfuehren
+                Start-Sleep -Milliseconds 500
                 [System.Windows.Forms.Application]::DoEvents()
             }
 
             # Completion
-            Write-Activity -RichTextBox $activityLog -Message "Verarbeitung erfolgreich abgeschlossen!" -Level Success
-            Write-Activity -RichTextBox $activityLog -Message "$($selectedElements.Count) Element(e) verarbeitet" -Level Success
+            Write-Activity -RichTextBox $activityLog -Message "═══════════════════════════════════════" -Level Info
+            Write-Activity -RichTextBox $activityLog -Message "Vorbereitung erfolgreich abgeschlossen!" -Level Success
             Write-Activity -RichTextBox $activityLog -Message "═══════════════════════════════════════" -Level Info
 
-            Write-StatusBar -Label $statusLabel -Message "Verarbeitung abgeschlossen" -ProgressBar $statusProgressBar -ShowProgress $false
+            Write-StatusBar -Label $statusLabel -Message "Vorbereitung abgeschlossen" -ProgressBar $statusProgressBar -ShowProgress $false
 
             # Re-enable start button
             $startButton.IsEnabled = $true
 
-            Show-MessageDialog -Title "Erfolg" -Message "Die Verarbeitung wurde erfolgreich abgeschlossen!`n`n$($selectedElements.Count) Element(e) verarbeitet." -Type Info
+            Show-MessageDialog -Title "Erfolg" -Message "Die Vorbereitung wurde erfolgreich abgeschlossen!" -Type Info
         }
         catch {
             Write-Activity -RichTextBox $activityLog -Message "FEHLER: $_" -Level Error
@@ -171,7 +206,7 @@ try {
             # Re-enable start button
             $startButton.IsEnabled = $true
 
-            Show-MessageDialog -Title "Fehler" -Message "Bei der Verarbeitung ist ein Fehler aufgetreten:`n`n$_" -Type Error
+            Show-MessageDialog -Title "Fehler" -Message "Bei der Vorbereitung ist ein Fehler aufgetreten:`n`n$_" -Type Error
         }
     })
 

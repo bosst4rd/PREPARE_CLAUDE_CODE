@@ -28,12 +28,10 @@
                 <!-- Optionale Elemente Auswahl -->
                 <Border Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" Padding="20" Margin="0,0,0,15">
                     <StackPanel>
-                        <Label Content="Optionale Elemente auswaehlen" FontSize="14" FontWeight="SemiBold" Foreground="#202020" Padding="0,0,0,10"/>
-                        <CheckBox Name="Element1CheckBox" Content="Element 1" FontSize="13" Margin="0,0,0,8" IsChecked="True"/>
-                        <CheckBox Name="Element2CheckBox" Content="Element 2" FontSize="13" Margin="0,0,0,8" IsChecked="True"/>
-                        <CheckBox Name="Element3CheckBox" Content="Element 3" FontSize="13" Margin="0,0,0,8" IsChecked="False"/>
-                        <CheckBox Name="Element4CheckBox" Content="Element 4" FontSize="13" Margin="0,0,0,8" IsChecked="False"/>
-                        <CheckBox Name="Element5CheckBox" Content="Element 5" FontSize="13" Margin="0,0,0,8" IsChecked="True"/>
+                        <Label Content="Optionale Software" FontSize="14" FontWeight="SemiBold" Foreground="#202020" Padding="0,0,0,10"/>
+                        <CheckBox Name="OfficeCheckBox" Content="Microsoft Office Home and Business" FontSize="13" Margin="0,0,0,8" IsChecked="False"/>
+                        <CheckBox Name="AcrobatCheckBox" Content="Adobe Acrobat Reader" FontSize="13" Margin="0,0,0,8" IsChecked="False"/>
+                        <CheckBox Name="ALBISCheckBox" Content="ALBIS (inkl. EPSON Treiber, GDT-Ordner)" FontSize="13" Margin="0,0,0,8" IsChecked="False"/>
                     </StackPanel>
                 </Border>
 
