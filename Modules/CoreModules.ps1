@@ -33,8 +33,7 @@ function Write-SetupLog {
     }
     $logFile = Join-Path $cfg.LogPath $cfg.LogFile
     Add-Content -Path $logFile -Value $logMessage -ErrorAction SilentlyContinue
-
-    return $logMessage
+    # Keine Rueckgabe - verhindert Pipeline-Stoerung
 }
 
 function Start-ModuleExecution {
